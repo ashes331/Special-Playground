@@ -296,12 +296,10 @@ function calcScore(cleared, tspinType) {
 
   // Combo
   if (cleared > 0) {
-    combo++;
-    if (combo > 0) {
-      const cb = 50 * combo * level;
-      pts += cb;
-      if (combo >= 2) notices.push(`${combo} COMBO!`);
-    }
+    combo++;  // -1 → 0 (첫 클리어), 0 → 1 (2연속), ...
+    const cb = 50 * combo * level;
+    pts += cb;
+    if (combo >= 1) notices.push(`${combo} COMBO!`);
   } else {
     combo = -1;
   }
@@ -365,7 +363,7 @@ function updateHUD() {
   scoreEl.textContent = score;
   linesEl.textContent = lines;
   levelEl.textContent = level;
-  comboEl.textContent = combo >= 1 ? `x${combo+1}` : '-';
+  comboEl.textContent = combo >= 0 ? `x${combo+1}` : '-';
 }
 
 // ── Draw ──────────────────────────────────────────────────────
