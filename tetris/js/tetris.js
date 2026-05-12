@@ -1,9 +1,11 @@
 'use strict';
 
 // ── Constants ────────────────────────────────────────────────
-const COLS   = 10;
-const ROWS   = 22;
-const CELL   = 36;  // px per cell
+const COLS         = 10;
+const ROWS_VISIBLE = 20;   // 실제로 보이는 영역
+const BUFFER       = 4;    // 위쪽 숨겨진 스폰 버퍼
+const ROWS_TOTAL   = ROWS_VISIBLE + BUFFER;  // 내부 보드 총 행 수 = 24
+const CELL         = 36;  // px per cell
 const COLORS = {
   I: '#00d4ff',
   O: '#ffe600',
@@ -19,11 +21,9 @@ const SHAPES = {
   I: [
     [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
     [[0,0,1,0],[0,0,1,0],[0,0,1,0],[0,0,1,0]],
-    [[0,0,0,0],[0,0,0,0],[1,1,1,1],[0,0,0,0]],
-    [[0,1,0,0],[0,1,0,0],[0,1,0,0],[0,1,0,0]],
   ],
   O: [
-    [[0,1,1,0],[0,1,1,0]],
+    [[1,1],[1,1]],
   ],
   T: [
     [[0,1,0],[1,1,1],[0,0,0]],
@@ -34,14 +34,10 @@ const SHAPES = {
   S: [
     [[0,1,1],[1,1,0],[0,0,0]],
     [[0,1,0],[0,1,1],[0,0,1]],
-    [[0,0,0],[0,1,1],[1,1,0]],
-    [[1,0,0],[1,1,0],[0,1,0]],
   ],
   Z: [
     [[1,1,0],[0,1,1],[0,0,0]],
     [[0,0,1],[0,1,1],[0,1,0]],
-    [[0,0,0],[1,1,0],[0,1,1]],
-    [[0,1,0],[1,1,0],[1,0,0]],
   ],
   J: [
     [[1,0,0],[1,1,1],[0,0,0]],
@@ -118,14 +114,14 @@ function createPiece(type) {
   const shape = SHAPES[type][0];
   const w = shape[0].length;
   const x = Math.floor((COLS - w) / 2);
-  // y=-1: 첫 번째 빈 행이 보드 위로 숨어서 자연스럽게 등장
-  const y = type === 'I' ? -1 : 0;
+  // 버퍼 맨 위에서 스폰 → 보이는 영역으로 자연스럽게 내려옴
+  const y = type === 'I' ? BUFFER - 2 : BUFFER - 2;
   return { type, shape, rotIdx: 0, x, y, color: COLORS[type] };
 }
 
 // ── Board ─────────────────────────────────────────────────────
 function emptyBoard() {
-  return Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+  return Array.from({ length: ROWS_TOTAL }, () => Array(COLS).fill(null));
 }
 
 // ── Collision ─────────────────────────────────────────────────
@@ -135,8 +131,8 @@ function collides(piece, dx = 0, dy = 0, shape = piece.shape) {
       if (!shape[r][c]) continue;
       const nx = piece.x + c + dx;
       const ny = piece.y + r + dy;
-      if (nx < 0 || nx >= COLS || ny >= ROWS) return true;
-      if (ny < 0) continue;  // 보드 위쪽은 충돌 무시 (스폰 공간)
+      if (nx < 0 || nx >= COLS || ny >= ROWS_TOTAL) return true;
+      if (ny < 0) continue;
       if (board[ny][nx]) return true;
     }
   }
@@ -168,17 +164,18 @@ function computeGhost() {
 
 // ── Lock piece ────────────────────────────────────────────────
 function lockPiece() {
-  let aboveBoard = true;
   for (let r = 0; r < current.shape.length; r++) {
     for (let c = 0; c < current.shape[r].length; c++) {
       if (!current.shape[r][c]) continue;
       const y = current.y + r;
-      if (y >= 0) aboveBoard = false;
       if (y < 0) continue;
       board[y][current.x + c] = current.color;
     }
   }
-  if (aboveBoard) { gameOver(); return; }
+  // 버퍼 영역(상단 4행)에 블록이 쌓이면 게임오버
+  for (let r = 0; r < BUFFER; r++) {
+    if (board[r].some(c => c !== null)) { gameOver(); return; }
+  }
   clearLines();
   spawnPiece();
 }
@@ -186,12 +183,12 @@ function lockPiece() {
 // ── Line clear ────────────────────────────────────────────────
 function clearLines() {
   let cleared = 0;
-  for (let r = ROWS - 1; r >= 0; r--) {
+  for (let r = ROWS_TOTAL - 1; r >= 0; r--) {
     if (board[r].every(c => c !== null)) {
       board.splice(r, 1);
       board.unshift(Array(COLS).fill(null));
       cleared++;
-      r++; // recheck same row index
+      r++;
     }
   }
   if (cleared > 0) {
@@ -265,10 +262,10 @@ function drawGrid() {
   for (let c = 0; c <= COLS; c++) {
     ctx.beginPath();
     ctx.moveTo(c * CELL, 0);
-    ctx.lineTo(c * CELL, ROWS * CELL);
+    ctx.lineTo(c * CELL, ROWS_VISIBLE * CELL);
     ctx.stroke();
   }
-  for (let r = 0; r <= ROWS; r++) {
+  for (let r = 0; r <= ROWS_VISIBLE; r++) {
     ctx.beginPath();
     ctx.moveTo(0, r * CELL);
     ctx.lineTo(COLS * CELL, r * CELL);
@@ -282,10 +279,10 @@ function drawBoard() {
   ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
   drawGrid();
 
-  // board cells
-  for (let r = 0; r < ROWS; r++) {
+  // 보드 셀: BUFFER 행 오프셋 적용 (버퍼는 안 보임)
+  for (let r = BUFFER; r < ROWS_TOTAL; r++) {
     for (let c = 0; c < COLS; c++) {
-      if (board[r][c]) drawCell(ctx, c, r, board[r][c]);
+      if (board[r][c]) drawCell(ctx, c, r - BUFFER, board[r][c]);
     }
   }
 
@@ -293,15 +290,16 @@ function drawBoard() {
   if (ghost && state === 'playing') {
     for (let r = 0; r < ghost.shape.length; r++) {
       for (let c = 0; c < ghost.shape[r].length; c++) {
-        if (ghost.shape[r][c]) {
-          ctx.globalAlpha = 0.2;
-          ctx.fillStyle = current.color;
-          ctx.fillRect((ghost.x + c) * CELL + 1, (ghost.y + r) * CELL + 1, CELL - 2, CELL - 2);
-          ctx.strokeStyle = current.color;
-          ctx.lineWidth = 1;
-          ctx.strokeRect((ghost.x + c) * CELL + 1, (ghost.y + r) * CELL + 1, CELL - 2, CELL - 2);
-          ctx.globalAlpha = 1;
-        }
+        if (!ghost.shape[r][c]) continue;
+        const drawY = ghost.y + r - BUFFER;
+        if (drawY < 0) continue;  // 버퍼 위는 안 그림
+        ctx.globalAlpha = 0.2;
+        ctx.fillStyle = current.color;
+        ctx.fillRect((ghost.x + c) * CELL + 1, drawY * CELL + 1, CELL - 2, CELL - 2);
+        ctx.strokeStyle = current.color;
+        ctx.lineWidth = 1;
+        ctx.strokeRect((ghost.x + c) * CELL + 1, drawY * CELL + 1, CELL - 2, CELL - 2);
+        ctx.globalAlpha = 1;
       }
     }
   }
@@ -310,7 +308,10 @@ function drawBoard() {
   if (current) {
     for (let r = 0; r < current.shape.length; r++) {
       for (let c = 0; c < current.shape[r].length; c++) {
-        if (current.shape[r][c]) drawCell(ctx, current.x + c, current.y + r, current.color);
+        if (!current.shape[r][c]) continue;
+        const drawY = current.y + r - BUFFER;
+        if (drawY < 0) continue;  // 버퍼 위는 안 그림
+        drawCell(ctx, current.x + c, drawY, current.color);
       }
     }
   }
