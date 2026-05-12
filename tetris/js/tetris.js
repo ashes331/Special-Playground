@@ -3,7 +3,7 @@
 // ── Constants ────────────────────────────────────────────────
 const COLS   = 10;
 const ROWS   = 20;
-const CELL   = 30;  // px per cell
+const CELL   = 36;  // px per cell
 const COLORS = {
   I: '#00d4ff',
   O: '#ffe600',
@@ -14,40 +14,40 @@ const COLORS = {
   L: '#ff8800',
 };
 
-// Tetrominoes: shape matrices (each rotation stored)
+// Tetrominoes: shape matrices (각 회전 저장, 실제 블록만 포함)
 const SHAPES = {
   I: [
-    [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
-    [[0,0,1,0],[0,0,1,0],[0,0,1,0],[0,0,1,0]],
+    [[1,1,1,1]],
+    [[1],[1],[1],[1]],
   ],
   O: [
     [[1,1],[1,1]],
   ],
   T: [
-    [[0,1,0],[1,1,1],[0,0,0]],
-    [[0,1,0],[0,1,1],[0,1,0]],
-    [[0,0,0],[1,1,1],[0,1,0]],
-    [[0,1,0],[1,1,0],[0,1,0]],
+    [[0,1,0],[1,1,1]],
+    [[1,0],[1,1],[1,0]],
+    [[1,1,1],[0,1,0]],
+    [[0,1],[1,1],[0,1]],
   ],
   S: [
-    [[0,1,1],[1,1,0],[0,0,0]],
-    [[0,1,0],[0,1,1],[0,0,1]],
+    [[0,1,1],[1,1,0]],
+    [[1,0],[1,1],[0,1]],
   ],
   Z: [
-    [[1,1,0],[0,1,1],[0,0,0]],
-    [[0,0,1],[0,1,1],[0,1,0]],
+    [[1,1,0],[0,1,1]],
+    [[0,1],[1,1],[1,0]],
   ],
   J: [
-    [[1,0,0],[1,1,1],[0,0,0]],
-    [[0,1,1],[0,1,0],[0,1,0]],
-    [[0,0,0],[1,1,1],[0,0,1]],
-    [[0,1,0],[0,1,0],[1,1,0]],
+    [[1,0,0],[1,1,1]],
+    [[1,1],[1,0],[1,0]],
+    [[1,1,1],[0,0,1]],
+    [[0,1],[0,1],[1,1]],
   ],
   L: [
-    [[0,0,1],[1,1,1],[0,0,0]],
-    [[0,1,0],[0,1,0],[0,1,1]],
-    [[0,0,0],[1,1,1],[1,0,0]],
-    [[1,1,0],[0,1,0],[0,1,0]],
+    [[0,0,1],[1,1,1]],
+    [[1,0],[1,0],[1,1]],
+    [[1,1,1],[1,0,0]],
+    [[1,1],[0,1],[0,1]],
   ],
 };
 
@@ -109,11 +109,13 @@ function nextPieceFromBag() {
 }
 
 function createPiece(type) {
+  const shape = SHAPES[type][0];
+  const x = Math.floor((COLS - shape[0].length) / 2);
   return {
     type,
-    shape: SHAPES[type][0],
+    shape,
     rotIdx: 0,
-    x: type === 'I' ? -1 : type === 'O' ? 4 : 3,
+    x,
     y: 0,
     color: COLORS[type],
   };
@@ -313,21 +315,23 @@ function drawBoard() {
 }
 
 function drawPreview(context, piece) {
-  context.clearRect(0, 0, 120, 120);
+  context.clearRect(0, 0, 144, 144);
   context.fillStyle = '#08080f';
-  context.fillRect(0, 0, 120, 120);
+  context.fillRect(0, 0, 144, 144);
   if (!piece) return;
 
   const s = piece.shape;
+  const previewCell = 30;
   const offsetX = Math.floor((4 - s[0].length) / 2);
   const offsetY = Math.floor((4 - s.length) / 2);
-  const previewCell = 24;
+  const startX = offsetX * previewCell + (144 - 4 * previewCell) / 2;
+  const startY = offsetY * previewCell + (144 - 4 * previewCell) / 2;
 
   for (let r = 0; r < s.length; r++) {
     for (let c = 0; c < s[r].length; c++) {
       if (!s[r][c]) continue;
-      const px = (offsetX + c) * previewCell + 4;
-      const py = (offsetY + r) * previewCell + 4;
+      const px = startX + c * previewCell;
+      const py = startY + r * previewCell;
       context.fillStyle = piece.color;
       context.fillRect(px + 1, py + 1, previewCell - 2, previewCell - 2);
       context.fillStyle = 'rgba(255,255,255,0.15)';
