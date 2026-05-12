@@ -132,7 +132,8 @@ function collides(piece, dx = 0, dy = 0, shape = piece.shape) {
       const nx = piece.x + c + dx;
       const ny = piece.y + r + dy;
       if (nx < 0 || nx >= COLS || ny >= ROWS) return true;
-      if (ny >= 0 && board[ny][nx]) return true;
+      if (ny < 0) continue;  // 보드 위쪽은 충돌 무시 (스폰 공간)
+      if (board[ny][nx]) return true;
     }
   }
   return false;
@@ -163,14 +164,17 @@ function computeGhost() {
 
 // ── Lock piece ────────────────────────────────────────────────
 function lockPiece() {
+  let aboveBoard = true;
   for (let r = 0; r < current.shape.length; r++) {
     for (let c = 0; c < current.shape[r].length; c++) {
       if (!current.shape[r][c]) continue;
       const y = current.y + r;
-      if (y < 0) { gameOver(); return; }
+      if (y >= 0) aboveBoard = false;
+      if (y < 0) continue;
       board[y][current.x + c] = current.color;
     }
   }
+  if (aboveBoard) { gameOver(); return; }
   clearLines();
   spawnPiece();
 }
@@ -199,13 +203,13 @@ function clearLines() {
 
 // ── Spawn ─────────────────────────────────────────────────────
 function spawnPiece() {
-  current   = next;
-  next      = nextPieceFromBag();
-  holdUsed  = false;
-  ghost     = computeGhost();
+  current  = next;
+  next     = nextPieceFromBag();
+  holdUsed = false;
   drawNext();
 
-  if (collides(current)) { gameOver(); }
+  if (collides(current)) { gameOver(); return; }
+  ghost = computeGhost();
 }
 
 // ── Hold ──────────────────────────────────────────────────────
@@ -344,7 +348,7 @@ function drawHold() { drawPreview(holdCtx, hold); }
 // ── Game loop ─────────────────────────────────────────────────
 function gameLoop(timestamp) {
   if (state !== 'playing') return;
-  const dt = timestamp - (lastTime || timestamp);
+  const dt = Math.min(timestamp - (lastTime || timestamp), 200); // 탭 비활성화 후 복귀 시 누적 방지
   lastTime = timestamp;
   dropTimer += dt;
 
@@ -424,25 +428,26 @@ function quitGame() {
 }
 
 // ── Input ─────────────────────────────────────────────────────
-const DAS_DELAY   = 160; // ms before auto-repeat
-const DAS_REPEAT  = 50;  // ms between repeats
-let dasTimer = null;
-let dasKey   = null;
+const DAS_DELAY   = 160;
+const DAS_REPEAT  = 50;
+let dasTimer    = null;
+let dasTimeout  = null;
+let dasKey      = null;  // 'left' | 'right' | null
 
 function clearDAS() {
-  if (dasTimer) { clearInterval(dasTimer); dasTimer = null; }
+  if (dasTimeout) { clearTimeout(dasTimeout);   dasTimeout = null; }
+  if (dasTimer)   { clearInterval(dasTimer);     dasTimer   = null; }
   dasKey = null;
 }
 
-function startDAS(action) {
-  action();
+function startDAS(key, action) {
+  if (dasKey === key) return;
   clearDAS();
-  dasKey = action;
-  const timeout = setTimeout(() => {
+  dasKey = key;
+  action();
+  dasTimeout = setTimeout(() => {
     dasTimer = setInterval(action, DAS_REPEAT);
   }, DAS_DELAY);
-  // store timeout so we can clear it
-  dasTimer = { _timeout: timeout };
 }
 
 document.addEventListener('keydown', e => {
@@ -455,19 +460,15 @@ document.addEventListener('keydown', e => {
   switch (e.code) {
     case 'ArrowLeft':
       e.preventDefault();
-      if (dasKey !== 'left') {
-        startDAS(() => {
-          if (!collides(current, -1, 0)) { current.x--; ghost = computeGhost(); drawBoard(); }
-        });
-      }
+      startDAS('left', () => {
+        if (!collides(current, -1, 0)) { current.x--; ghost = computeGhost(); drawBoard(); }
+      });
       break;
     case 'ArrowRight':
       e.preventDefault();
-      if (dasKey !== 'right') {
-        startDAS(() => {
-          if (!collides(current, 1, 0)) { current.x++; ghost = computeGhost(); drawBoard(); }
-        });
-      }
+      startDAS('right', () => {
+        if (!collides(current, 1, 0)) { current.x++; ghost = computeGhost(); drawBoard(); }
+      });
       break;
     case 'ArrowDown':
       e.preventDefault();
@@ -500,14 +501,7 @@ document.addEventListener('keydown', e => {
 });
 
 document.addEventListener('keyup', e => {
-  if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
-    if (dasTimer) {
-      if (dasTimer._timeout) clearTimeout(dasTimer._timeout);
-      else clearInterval(dasTimer);
-      dasTimer = null;
-    }
-    dasKey = null;
-  }
+  if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') clearDAS();
 });
 
 // ── Init ──────────────────────────────────────────────────────
