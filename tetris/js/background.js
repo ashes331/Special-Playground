@@ -5,41 +5,38 @@
   const ctx    = canvas.getContext('2d');
 
   let W, H;
-  let drops     = [];   // 개별 빗방울
+  let streams   = [];
   let buildings = [];
 
-  const FONT_SIZE    = 14;
-  const SPAWN_INTERVAL = 250;
-  let   spawnTimer   = 0;
+  const FONT_SIZE      = 14;
+  const SPAWN_INTERVAL = 300;
+  let   spawnTimer     = 0;
 
-  // ── 그룹 스폰 (7~15개) ────────────────────────────────────
-  function spawnGroup() {
-    const count = 7 + Math.floor(Math.random() * 9);
-    for (let i = 0; i < count; i++) {
-      drops.push({
-        x:           Math.random() * W,
-        y:           -FONT_SIZE * (1 + Math.random() * 5),
-        speed:       55 + Math.random() * 70,
-        ch:          Math.random() > 0.5 ? '1' : '0',
-        chTimer:     0,
-        chInterval:  800 + Math.random() * 1200,
-      });
-    }
+  // ── 스트림 생성 ───────────────────────────────────────────
+  // 각 스트림: x 고정, 7~15개의 0/1이 세로로 붙어서 한 덩어리로 내려옴
+  function createStream() {
+    const len = 7 + Math.floor(Math.random() * 9); // 7~15
+    const chars = Array.from({ length: len }, () => Math.random() > 0.5 ? '1' : '0');
+    return {
+      x:        20 + Math.random() * (W - 40),
+      y:        -FONT_SIZE * (len + 2 + Math.random() * 4),
+      speed:    50 + Math.random() * 60,
+      chars,
+      len,
+      // 숫자 변경 타이머
+      chTimer:    0,
+      chInterval: 900 + Math.random() * 1100,
+    };
   }
 
-  // 초기 화면 가득 채우기
-  function initDrops() {
-    drops = [];
-    const initCount = Math.floor(W / 18);  // 화면 너비 기준으로 충분히
-    for (let i = 0; i < initCount; i++) {
-      drops.push({
-        x:           Math.random() * W,
-        y:           Math.random() * H * 0.55,  // 이미 화면 위에 퍼져있게
-        speed:       55 + Math.random() * 70,
-        ch:          Math.random() > 0.5 ? '1' : '0',
-        chTimer:     Math.random() * 1000,
-        chInterval:  800 + Math.random() * 1200,
-      });
+  // 초기 화면 채우기
+  function initStreams() {
+    streams = [];
+    const count = Math.floor(W / 60);
+    for (let i = 0; i < count; i++) {
+      const s = createStream();
+      s.y = Math.random() * H * 0.5; // 이미 내려오는 중으로 시작
+      streams.push(s);
     }
   }
 
@@ -95,24 +92,28 @@
       ctx.fillStyle = b.layer === 0 ? '#090e1a' : '#060b13';
       ctx.fillRect(bx, by, bw, bh);
 
-      const wW = Math.max(6, Math.min(bw * 0.22, 18));
-      const wH = wW * 1.3;
-      const cCols = Math.max(1, Math.floor((bw - wW * 0.5) / (wW * 1.8)));
-      const cRows = Math.max(1, Math.floor((bh * 0.75) / (wH * 1.8)));
+      // 창문
+      const wW = Math.max(8, Math.min(bw * 0.20, 20));
+      const wH = wW * 1.4;
+      const gap = wW * 0.9;
+      const cCols = Math.max(1, Math.floor((bw - gap) / (wW + gap)));
+      const cRows = Math.max(2, Math.floor((bh * 0.72) / (wH + gap)));
+      const padX  = (bw - cCols * (wW + gap) + gap) / 2;
+      const padY  = wH * 0.5;
       const colors = [
-        'rgba(255,215,100,0.65)',
-        'rgba(140,195,255,0.55)',
-        'rgba(195,170,255,0.50)',
+        'rgba(255,215,100,0.70)',
+        'rgba(140,195,255,0.60)',
+        'rgba(195,170,255,0.55)',
       ];
 
       for (let r = 0; r < cRows; r++) {
         for (let c = 0; c < cCols; c++) {
           const seed = (b.x * 997 + r * 19 + c * 37) % 100;
-          if (seed < 55) {
+          if (seed < 58) {
             ctx.fillStyle = colors[seed % 3];
             ctx.fillRect(
-              bx + wW * 0.6 + c * (wW * 1.7),
-              by + wH * 0.6 + r * (wH * 1.6),
+              bx + padX + c * (wW + gap),
+              by + padY + r * (wH + gap),
               wW, wH
             );
           }
@@ -125,49 +126,63 @@
     });
   }
 
-  // ── 비 업데이트 & 그리기 ──────────────────────────────────
-  function updateRain(dt) {
-    ctx.font         = `${FONT_SIZE}px monospace`;
+  // ── 스트림 업데이트 & 그리기 ──────────────────────────────
+  function updateStreams(dt) {
+    ctx.font         = `bold ${FONT_SIZE}px monospace`;
     ctx.textAlign    = 'center';
     ctx.textBaseline = 'top';
 
-    const fadeEnd = H * 0.58;
+    const fadeEnd = H * 0.60;
 
-    for (let i = drops.length - 1; i >= 0; i--) {
-      const d = drops[i];
+    for (let i = streams.length - 1; i >= 0; i--) {
+      const s = streams[i];
 
-      // 위치 & 숫자 타이머 업데이트
-      d.y         += d.speed * dt / 1000;
-      d.chTimer   += dt;
-      if (d.chTimer >= d.chInterval) {
-        d.ch      = Math.random() > 0.5 ? '1' : '0';
-        d.chTimer = 0;
+      // 이동
+      s.y += s.speed * dt / 1000;
+
+      // 숫자 랜덤 변경 (천천히)
+      s.chTimer += dt;
+      if (s.chTimer >= s.chInterval) {
+        const idx = Math.floor(Math.random() * s.len);
+        s.chars[idx] = Math.random() > 0.5 ? '1' : '0';
+        s.chTimer = 0;
       }
 
-      // 화면 벗어나면 제거
-      if (d.y > H) {
-        drops.splice(i, 1);
+      // 스트림 전체가 화면 아래로 벗어나면 제거
+      if (s.y > H + s.len * FONT_SIZE) {
+        streams.splice(i, 1);
         continue;
       }
 
-      // 페이드
-      const alpha = Math.max(0, 1 - d.y / fadeEnd);
-      if (alpha <= 0) continue;
+      // 각 글자 그리기
+      for (let j = 0; j < s.len; j++) {
+        const charY = s.y + j * FONT_SIZE;
+        if (charY < -FONT_SIZE || charY > H) continue;
 
-      // 헤드
-      ctx.globalAlpha = alpha * 0.88;
-      ctx.fillStyle   = '#dfffdf';
-      ctx.fillText(d.ch, d.x, d.y);
+        // 페이드: 위쪽은 밝고 아래로 갈수록 투명
+        const fadeAlpha = Math.max(0, 1 - charY / fadeEnd);
+        if (fadeAlpha <= 0) continue;
 
-      // 꼬리 1
-      ctx.globalAlpha = alpha * 0.42;
-      ctx.fillStyle   = '#00ff41';
-      ctx.fillText(d.ch, d.x, d.y - FONT_SIZE);
+        // 맨 위 글자(헤드)는 밝게, 아래로 갈수록 어둡게
+        const posRatio = j / s.len;
+        const brightness = 1 - posRatio * 0.75;
 
-      // 꼬리 2
-      ctx.globalAlpha = alpha * 0.16;
-      ctx.fillStyle   = '#00aa28';
-      ctx.fillText(d.ch, d.x, d.y - FONT_SIZE * 2);
+        if (j === 0) {
+          // 헤드: 흰색
+          ctx.globalAlpha = fadeAlpha * 0.95;
+          ctx.fillStyle   = '#e0ffe0';
+        } else if (j < 3) {
+          // 상단: 밝은 초록
+          ctx.globalAlpha = fadeAlpha * brightness * 0.75;
+          ctx.fillStyle   = '#00ff41';
+        } else {
+          // 하단: 어두운 초록
+          ctx.globalAlpha = fadeAlpha * brightness * 0.45;
+          ctx.fillStyle   = '#00bb30';
+        }
+
+        ctx.fillText(s.chars[j], s.x, charY);
+      }
 
       ctx.globalAlpha = 1;
     }
@@ -180,17 +195,16 @@
     const dt = Math.min(t - lastT, 50);
     lastT = t;
 
-    // 그룹 스폰
     spawnTimer += dt;
     if (spawnTimer >= SPAWN_INTERVAL) {
-      spawnGroup();
+      streams.push(createStream());
       spawnTimer = 0;
     }
 
     ctx.clearRect(0, 0, W, H);
     drawBackground();
     drawBuildings();
-    updateRain(dt);
+    updateStreams(dt);
 
     requestAnimationFrame(loop);
   }
@@ -200,7 +214,7 @@
     W         = canvas.width  = window.innerWidth;
     H         = canvas.height = window.innerHeight;
     buildings = buildCity();
-    initDrops();
+    initStreams();
     spawnTimer = 0;
   }
 
