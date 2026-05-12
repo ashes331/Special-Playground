@@ -22,6 +22,11 @@
     <main class="game-area">
       <div class="screen-frame">
         <canvas id="game-canvas" width="360" height="720"></canvas>
+
+        <!-- 콤보 / 스페셜 알림 -->
+        <div id="notice"></div>
+
+        <!-- 시작 / 게임오버 오버레이 -->
         <div id="overlay" class="overlay">
           <div class="overlay-content">
             <div class="big-title">TETRIS</div>
@@ -30,13 +35,13 @@
           </div>
         </div>
 
-        <!-- ESC 설정창 -->
+        <!-- ESC 메뉴 -->
         <div id="pause-menu" class="pause-menu hidden">
           <div class="pause-content">
             <div class="pause-title">PAUSED</div>
-            <button id="btn-resume" class="menu-btn">▶ RESUME</button>
+            <button id="btn-resume"  class="menu-btn">▶ RESUME</button>
             <button id="btn-restart" class="menu-btn">↺ RESTART</button>
-            <button id="btn-quit" class="menu-btn quit">✕ QUIT</button>
+            <button id="btn-quit"    class="menu-btn quit">✕ QUIT</button>
           </div>
         </div>
       </div>
@@ -54,6 +59,10 @@
       <div class="panel">
         <div class="label">LEVEL</div>
         <div id="level" class="value">1</div>
+      </div>
+      <div class="panel">
+        <div class="label">COMBO</div>
+        <div id="combo" class="value">-</div>
       </div>
       <div class="panel controls">
         <div class="label">CONTROLS</div>
