@@ -294,14 +294,14 @@ function calcScore(cleared, tspinType) {
     btbActive = false;
   }
 
-  // Combo
+  // Combo: 첫 클리어부터 combo=1로 시작
   if (cleared > 0) {
-    combo++;  // -1 → 0 (첫 클리어), 0 → 1 (2연속), ...
+    combo = Math.max(combo, 0) + 1;  // 0이하면 1로, 이미 양수면 +1
     const cb = 50 * combo * level;
     pts += cb;
-    if (combo >= 1) notices.push(`${combo} COMBO!`);
+    notices.push(`${combo} COMBO!`);
   } else {
-    combo = -1;
+    combo = 0;
   }
 
   // All Clear
@@ -363,7 +363,7 @@ function updateHUD() {
   scoreEl.textContent = score;
   linesEl.textContent = lines;
   levelEl.textContent = level;
-  comboEl.textContent = combo >= 0 ? `x${combo+1}` : '-';
+  comboEl.textContent = combo >= 1 ? `x${combo}` : '-';
 }
 
 // ── Draw ──────────────────────────────────────────────────────
@@ -502,7 +502,7 @@ function gameLoop(timestamp) {
 function startGame() {
   board     = emptyBoard();
   score=0; lines=0; level=1;
-  combo=-1; btbActive=false;
+  combo=0; btbActive=false;
   hold=null; holdUsed=false;
   dropTimer=0; lastTime=null;
   bag=[];
