@@ -73,6 +73,17 @@ const finalScore  = document.getElementById('final-score');
 const scoreEl     = document.getElementById('score');
 const linesEl     = document.getElementById('lines');
 const levelEl     = document.getElementById('level');
+const pauseMenu   = document.getElementById('pause-menu');
+
+// ── Pause menu buttons ────────────────────────────────────────
+document.getElementById('btn-resume').addEventListener('click', resumeGame);
+document.getElementById('btn-restart').addEventListener('click', () => { closePauseMenu(); startGame(); });
+document.getElementById('btn-quit').addEventListener('click', quitGame);
+
+// 설정창 바깥 클릭 시 재개
+pauseMenu.addEventListener('click', e => {
+  if (e.target === pauseMenu) resumeGame();
+});
 
 // ── Game state ───────────────────────────────────────────────
 let board, current, ghost, next, hold;
@@ -383,19 +394,33 @@ function gameOver() {
   overlay.classList.remove('hidden');
 }
 
-function togglePause() {
-  if (state === 'playing') {
-    state = 'paused';
-    overlayMsg.textContent = 'PAUSED';
-    finalScore.textContent = '';
-    overlay.classList.remove('hidden');
-  } else if (state === 'paused') {
-    state = 'playing';
-    lastTime  = null;
-    dropTimer = 0;
-    overlay.classList.add('hidden');
-    requestAnimationFrame(gameLoop);
-  }
+function openPauseMenu() {
+  if (state !== 'playing') return;
+  state = 'paused';
+  pauseMenu.classList.remove('hidden');
+}
+
+function closePauseMenu() {
+  pauseMenu.classList.add('hidden');
+}
+
+function resumeGame() {
+  if (state !== 'paused') return;
+  closePauseMenu();
+  state     = 'playing';
+  lastTime  = null;
+  dropTimer = 0;
+  requestAnimationFrame(gameLoop);
+}
+
+function quitGame() {
+  closePauseMenu();
+  state = 'idle';
+  board = emptyBoard();
+  drawBoard();
+  overlay.classList.remove('hidden');
+  overlayMsg.textContent = 'PRESS SPACE';
+  finalScore.textContent = '';
 }
 
 // ── Input ─────────────────────────────────────────────────────
@@ -424,7 +449,7 @@ document.addEventListener('keydown', e => {
   if (state === 'idle' || state === 'over') {
     if (e.code === 'Space') { startGame(); return; }
   }
-  if (e.code === 'KeyP') { togglePause(); return; }
+  if (e.code === 'Escape') { openPauseMenu(); return; }
   if (state !== 'playing') return;
 
   switch (e.code) {
