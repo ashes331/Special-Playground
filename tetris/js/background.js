@@ -8,22 +8,37 @@
   let drops     = [];   // 개별 빗방울
   let buildings = [];
 
-  const FONT_SIZE   = 14;
-  const SPAWN_INTERVAL = 400; // ms마다 새 그룹 생성
-  let   spawnTimer  = 0;
+  const FONT_SIZE    = 14;
+  const SPAWN_INTERVAL = 250;
+  let   spawnTimer   = 0;
 
-  // ── 그룹 생성 (7~15개 랜덤) ──────────────────────────────
+  // ── 그룹 스폰 (7~15개) ────────────────────────────────────
   function spawnGroup() {
-    const count = 7 + Math.floor(Math.random() * 9); // 7~15
+    const count = 7 + Math.floor(Math.random() * 9);
     for (let i = 0; i < count; i++) {
-      const x = Math.random() * W;
       drops.push({
-        x,
-        y:      -FONT_SIZE * (1 + Math.random() * 6),
-        speed:  55 + Math.random() * 70,   // px/sec
-        ch:     Math.random() > 0.5 ? '1' : '0',  // 고정 숫자
-        chTimer: 0,
-        chInterval: 800 + Math.random() * 1200,    // 0.8~2초마다 변경
+        x:           Math.random() * W,
+        y:           -FONT_SIZE * (1 + Math.random() * 5),
+        speed:       55 + Math.random() * 70,
+        ch:          Math.random() > 0.5 ? '1' : '0',
+        chTimer:     0,
+        chInterval:  800 + Math.random() * 1200,
+      });
+    }
+  }
+
+  // 초기 화면 가득 채우기
+  function initDrops() {
+    drops = [];
+    const initCount = Math.floor(W / 18);  // 화면 너비 기준으로 충분히
+    for (let i = 0; i < initCount; i++) {
+      drops.push({
+        x:           Math.random() * W,
+        y:           Math.random() * H * 0.55,  // 이미 화면 위에 퍼져있게
+        speed:       55 + Math.random() * 70,
+        ch:          Math.random() > 0.5 ? '1' : '0',
+        chTimer:     Math.random() * 1000,
+        chInterval:  800 + Math.random() * 1200,
       });
     }
   }
@@ -80,14 +95,14 @@
       ctx.fillStyle = b.layer === 0 ? '#090e1a' : '#060b13';
       ctx.fillRect(bx, by, bw, bh);
 
-      const wW = Math.max(4, bw * 0.17);
+      const wW = Math.max(6, Math.min(bw * 0.22, 18));
       const wH = wW * 1.3;
-      const cCols = Math.max(1, Math.floor((bw - wW) / (wW * 1.7)));
-      const cRows = Math.max(1, Math.floor((bh * 0.68) / (wH * 1.6)));
+      const cCols = Math.max(1, Math.floor((bw - wW * 0.5) / (wW * 1.8)));
+      const cRows = Math.max(1, Math.floor((bh * 0.75) / (wH * 1.8)));
       const colors = [
-        'rgba(255,215,100,0.55)',
-        'rgba(140,195,255,0.45)',
-        'rgba(195,170,255,0.40)',
+        'rgba(255,215,100,0.65)',
+        'rgba(140,195,255,0.55)',
+        'rgba(195,170,255,0.50)',
       ];
 
       for (let r = 0; r < cRows; r++) {
@@ -185,8 +200,8 @@
     W         = canvas.width  = window.innerWidth;
     H         = canvas.height = window.innerHeight;
     buildings = buildCity();
-    drops     = [];
-    spawnTimer = SPAWN_INTERVAL; // 즉시 첫 그룹 생성
+    initDrops();
+    spawnTimer = 0;
   }
 
   window.addEventListener('resize', resize);
