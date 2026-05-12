@@ -5,8 +5,7 @@
   const ctx    = canvas.getContext('2d');
 
   let W, H;
-  let streams   = [];
-  let buildings = [];
+  let streams = [];
 
   const FONT_SIZE      = 14;
   const SPAWN_INTERVAL = 180;
@@ -41,95 +40,75 @@
   }
 
   // ── 도시 빌딩 ─────────────────────────────────────────────
+  // ── 도시 빌딩 ─────────────────────────────────────────────
+  // [x비율, 너비비율, 높이px]  — by = H - h 로 항상 하단 고정
+  let cityBlocks = [];
+
   function buildCity() {
-    const list = [];
-    // [x비율, 높이비율, 너비비율]
+    cityBlocks = [];
     const back = [
-      [.00,.45,.07],[.06,.52,.05],[.10,.47,.08],[.17,.55,.06],
-      [.22,.49,.09],[.30,.57,.05],[.34,.51,.07],[.40,.53,.06],
-      [.45,.45,.08],[.52,.57,.05],[.56,.51,.07],[.62,.47,.09],
-      [.70,.55,.05],[.74,.49,.08],[.81,.53,.06],[.86,.45,.07],
-      [.92,.54,.08],
+      [.00,.07,260],[.06,.05,320],[.10,.08,280],[.17,.06,380],
+      [.22,.09,300],[.30,.05,400],[.34,.07,340],[.40,.06,360],
+      [.45,.08,260],[.52,.05,400],[.56,.07,340],[.62,.08,280],
+      [.70,.05,380],[.74,.08,300],[.81,.06,360],[.86,.07,260],
+      [.92,.08,370],
     ];
-    back.forEach(([x,h,w]) => list.push({ x, h, w, layer:0 }));
+    back.forEach(([x,w,h]) => cityBlocks.push({ x, w, h, layer:0 }));
 
     const front = [
-      [.00,.35,.09],[.08,.39,.07],[.14,.37,.10],[.23,.41,.08],
-      [.30,.38,.11],[.40,.40,.09],[.48,.35,.07],[.54,.43,.12],
-      [.65,.39,.08],[.72,.35,.10],[.81,.40,.09],[.89,.37,.11],
+      [.00,.09,180],[.08,.07,220],[.14,.10,200],[.23,.08,240],
+      [.30,.11,210],[.40,.09,230],[.48,.07,180],[.54,.12,260],
+      [.65,.08,220],[.72,.10,180],[.81,.09,230],[.89,.11,200],
     ];
-    front.forEach(([x,h,w]) => list.push({ x, h, w, layer:1 }));
-    return list;
+    front.forEach(([x,w,h]) => cityBlocks.push({ x, w, h, layer:1 }));
   }
 
-  // ── 배경 하늘 ─────────────────────────────────────────────
-  function drawBackground() {
-    const sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0,   '#020610');
-    sky.addColorStop(0.5, '#05101e');
-    sky.addColorStop(1,   '#0a1628');
-    ctx.fillStyle = sky;
-    ctx.fillRect(0, 0, W, H);
-
-    const g1 = ctx.createRadialGradient(W*.7, H*.2, 0, W*.7, H*.2, W*.4);
-    g1.addColorStop(0, 'rgba(180,76,255,0.07)');
-    g1.addColorStop(1, 'transparent');
-    ctx.fillStyle = g1;
-    ctx.fillRect(0, 0, W, H);
-
-    const g2 = ctx.createLinearGradient(0, H*.65, 0, H*.82);
-    g2.addColorStop(0, 'rgba(255,0,110,0.08)');
-    g2.addColorStop(1, 'transparent');
-    ctx.fillStyle = g2;
-    ctx.fillRect(0, H*.65, W, H*.17);
-  }
-
-  // ── 빌딩 그리기 ───────────────────────────────────────────
   function drawBuildings() {
-    buildings.forEach(b => {
+    cityBlocks.forEach(b => {
       const bx = b.x * W;
-      const bw = b.w * W;
-      // 빌딩 높이: 화면 높이의 일정 비율, 최소 120px
-      const bh = Math.max(120, H * b.h);
-      // 빌딩 시작 y: 항상 화면 하단에서 bh만큼 위
+      const bw = Math.max(30, b.w * W);
+      const bh = b.h;
       const by = H - bh;
 
-      ctx.fillStyle = b.layer === 0 ? '#090e1a' : '#060b13';
+      // 본체
+      ctx.fillStyle = b.layer === 0 ? '#080d18' : '#050b12';
       ctx.fillRect(bx, by, bw, bh);
 
       // 창문
-      const wW = Math.max(8, Math.min(bw * 0.20, 20));
-      const wH = wW * 1.4;
-      const gap = wW * 0.9;
-      const cCols = Math.max(1, Math.floor((bw - gap) / (wW + gap)));
-      const cRows = Math.max(2, Math.floor((bh * 0.72) / (wH + gap)));
-      const padX  = (bw - cCols * (wW + gap) + gap) / 2;
-      const padY  = wH * 0.5;
-      const colors = [
-        'rgba(255,215,100,0.70)',
-        'rgba(140,195,255,0.60)',
-        'rgba(195,170,255,0.55)',
+      const wW     = Math.max(8, Math.min(bw * 0.18, 18));
+      const wH     = wW * 1.5;
+      const gap    = Math.max(5, wW * 0.8);
+      const cols   = Math.max(1, Math.floor((bw - gap) / (wW + gap)));
+      const rows   = Math.max(1, Math.floor((bh - wH * 1.5) / (wH + gap)));
+      const startX = (bw - cols * (wW + gap) + gap) / 2;
+      const startY = wH * 0.8;
+      const winColors = [
+        'rgba(255,210,90,0.75)',
+        'rgba(130,190,255,0.65)',
+        'rgba(190,160,255,0.60)',
       ];
 
-      for (let r = 0; r < cRows; r++) {
-        for (let c = 0; c < cCols; c++) {
-          const seed = (b.x * 997 + r * 19 + c * 37) % 100;
-          if (seed < 58) {
-            ctx.fillStyle = colors[seed % 3];
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const seed = Math.floor(b.x * 1000 + r * 23 + c * 41) % 100;
+          if (seed < 60) {
+            ctx.fillStyle = winColors[seed % 3];
             ctx.fillRect(
-              bx + padX + c * (wW + gap),
-              by + padY + r * (wH + gap),
+              bx + startX + c * (wW + gap),
+              by + startY + r * (wH + gap),
               wW, wH
             );
           }
         }
       }
 
+      // 윤곽선
       ctx.strokeStyle = 'rgba(20,50,90,0.3)';
       ctx.lineWidth   = 0.5;
       ctx.strokeRect(bx, by, bw, bh);
     });
   }
+  function drawBackground() {
 
   // ── 스트림 업데이트 & 그리기 ──────────────────────────────
   function updateStreams(dt) {
@@ -221,9 +200,9 @@
 
   // ── 리사이즈 ──────────────────────────────────────────────
   function resize() {
-    W         = canvas.width  = window.innerWidth;
-    H         = canvas.height = window.innerHeight;
-    buildings = buildCity();
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    buildCity();
     initStreams();
     spawnTimer = 0;
   }
