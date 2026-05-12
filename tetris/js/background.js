@@ -5,20 +5,25 @@
   const ctx    = canvas.getContext('2d');
 
   let W, H;
-  let columns  = [];
+  let drops     = [];   // 개별 빗방울
   let buildings = [];
 
-  const FONT_SIZE = 14;
+  const FONT_SIZE   = 14;
+  const SPAWN_INTERVAL = 400; // ms마다 새 그룹 생성
+  let   spawnTimer  = 0;
 
-  // ── 비 초기화 ─────────────────────────────────────────────
-  function initRain() {
-    const count = Math.floor(W / FONT_SIZE);
-    columns = [];
+  // ── 그룹 생성 (7~15개 랜덤) ──────────────────────────────
+  function spawnGroup() {
+    const count = 7 + Math.floor(Math.random() * 9); // 7~15
     for (let i = 0; i < count; i++) {
-      columns.push({
-        x:     i * FONT_SIZE + FONT_SIZE / 2,
-        y:     Math.random() * -H * 1.5,
-        speed: 60 + Math.random() * 80,   // px/sec
+      const x = Math.random() * W;
+      drops.push({
+        x,
+        y:      -FONT_SIZE * (1 + Math.random() * 6),
+        speed:  55 + Math.random() * 70,   // px/sec
+        ch:     Math.random() > 0.5 ? '1' : '0',  // 고정 숫자
+        chTimer: 0,
+        chInterval: 800 + Math.random() * 1200,    // 0.8~2초마다 변경
       });
     }
   }
@@ -26,8 +31,6 @@
   // ── 도시 빌딩 ─────────────────────────────────────────────
   function buildCity() {
     const list = [];
-
-    // 뒷 레이어 (y = 화면 아래 70~80%)
     const back = [
       [.00,.72,.07],[.06,.65,.05],[.10,.70,.08],[.17,.62,.06],
       [.22,.68,.09],[.30,.60,.05],[.34,.66,.07],[.40,.64,.06],
@@ -37,14 +40,12 @@
     ];
     back.forEach(([x,y,w]) => list.push({ x, y, w, h:1-y, layer:0 }));
 
-    // 앞 레이어 (y = 화면 아래 76~86%)
     const front = [
       [.00,.80,.09],[.08,.76,.07],[.14,.78,.10],[.23,.74,.08],
       [.30,.77,.11],[.40,.75,.09],[.48,.80,.07],[.54,.72,.12],
       [.65,.76,.08],[.72,.80,.10],[.81,.75,.09],[.89,.78,.11],
     ];
     front.forEach(([x,y,w]) => list.push({ x, y, w, h:1-y, layer:1 }));
-
     return list;
   }
 
@@ -57,14 +58,12 @@
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, W, H);
 
-    // 보라 ambient
     const g1 = ctx.createRadialGradient(W*.7, H*.2, 0, W*.7, H*.2, W*.4);
     g1.addColorStop(0, 'rgba(180,76,255,0.07)');
     g1.addColorStop(1, 'transparent');
     ctx.fillStyle = g1;
     ctx.fillRect(0, 0, W, H);
 
-    // 지평선 핑크 글로우
     const g2 = ctx.createLinearGradient(0, H*.65, 0, H*.82);
     g2.addColorStop(0, 'rgba(255,0,110,0.08)');
     g2.addColorStop(1, 'transparent');
@@ -75,15 +74,12 @@
   // ── 빌딩 그리기 ───────────────────────────────────────────
   function drawBuildings() {
     buildings.forEach(b => {
-      const bx = b.x * W;
-      const by = b.y * H;
-      const bw = b.w * W;
-      const bh = b.h * H;
+      const bx = b.x * W, by = b.y * H;
+      const bw = b.w * W, bh = b.h * H;
 
       ctx.fillStyle = b.layer === 0 ? '#090e1a' : '#060b13';
       ctx.fillRect(bx, by, bw, bh);
 
-      // 창문
       const wW = Math.max(4, bw * 0.17);
       const wH = wW * 1.3;
       const cCols = Math.max(1, Math.floor((bw - wW) / (wW * 1.7)));
@@ -114,45 +110,52 @@
     });
   }
 
-  // ── 비 그리기 (수직, 아래로 페이드) ─────────────────────
-  function drawRain(dt) {
-    ctx.font = `${FONT_SIZE}px monospace`;
-    ctx.textAlign   = 'center';
+  // ── 비 업데이트 & 그리기 ──────────────────────────────────
+  function updateRain(dt) {
+    ctx.font         = `${FONT_SIZE}px monospace`;
+    ctx.textAlign    = 'center';
     ctx.textBaseline = 'top';
 
-    const fadeEnd = H * 0.60;  // 이 y 이하는 완전 투명
+    const fadeEnd = H * 0.58;
 
-    columns.forEach(col => {
-      // 위치 업데이트
-      col.y += col.speed * dt / 1000;
-      if (col.y > H) {
-        col.y     = -FONT_SIZE * (1 + Math.random() * 8);
-        col.speed = 60 + Math.random() * 80;
+    for (let i = drops.length - 1; i >= 0; i--) {
+      const d = drops[i];
+
+      // 위치 & 숫자 타이머 업데이트
+      d.y         += d.speed * dt / 1000;
+      d.chTimer   += dt;
+      if (d.chTimer >= d.chInterval) {
+        d.ch      = Math.random() > 0.5 ? '1' : '0';
+        d.chTimer = 0;
       }
 
-      // 페이드: y=0 → alpha 최대, y=fadeEnd → alpha 0
-      const alpha = Math.max(0, 1 - col.y / fadeEnd);
-      if (alpha <= 0) return;
+      // 화면 벗어나면 제거
+      if (d.y > H) {
+        drops.splice(i, 1);
+        continue;
+      }
 
-      const ch = Math.random() > 0.5 ? '1' : '0';
+      // 페이드
+      const alpha = Math.max(0, 1 - d.y / fadeEnd);
+      if (alpha <= 0) continue;
 
       // 헤드
-      ctx.globalAlpha = alpha * 0.9;
+      ctx.globalAlpha = alpha * 0.88;
       ctx.fillStyle   = '#dfffdf';
-      ctx.fillText(ch, col.x, col.y);
+      ctx.fillText(d.ch, d.x, d.y);
 
       // 꼬리 1
-      ctx.globalAlpha = alpha * 0.45;
+      ctx.globalAlpha = alpha * 0.42;
       ctx.fillStyle   = '#00ff41';
-      ctx.fillText(Math.random() > 0.5 ? '1' : '0', col.x, col.y - FONT_SIZE);
+      ctx.fillText(d.ch, d.x, d.y - FONT_SIZE);
 
       // 꼬리 2
-      ctx.globalAlpha = alpha * 0.18;
+      ctx.globalAlpha = alpha * 0.16;
       ctx.fillStyle   = '#00aa28';
-      ctx.fillText(Math.random() > 0.5 ? '1' : '0', col.x, col.y - FONT_SIZE * 2);
+      ctx.fillText(d.ch, d.x, d.y - FONT_SIZE * 2);
 
       ctx.globalAlpha = 1;
-    });
+    }
   }
 
   // ── 메인 루프 ─────────────────────────────────────────────
@@ -162,10 +165,17 @@
     const dt = Math.min(t - lastT, 50);
     lastT = t;
 
+    // 그룹 스폰
+    spawnTimer += dt;
+    if (spawnTimer >= SPAWN_INTERVAL) {
+      spawnGroup();
+      spawnTimer = 0;
+    }
+
     ctx.clearRect(0, 0, W, H);
     drawBackground();
     drawBuildings();
-    drawRain(dt);
+    updateRain(dt);
 
     requestAnimationFrame(loop);
   }
@@ -175,7 +185,8 @@
     W         = canvas.width  = window.innerWidth;
     H         = canvas.height = window.innerHeight;
     buildings = buildCity();
-    initRain();
+    drops     = [];
+    spawnTimer = SPAWN_INTERVAL; // 즉시 첫 그룹 생성
   }
 
   window.addEventListener('resize', resize);
