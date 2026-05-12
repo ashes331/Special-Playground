@@ -150,6 +150,61 @@ kbd {
   border: 1px solid #0e2035;
 }
 
+/* ── pause menu ───────────────────────────────── */
+.pause-menu {
+  position: absolute; inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8,8,15,.88);
+  backdrop-filter: blur(3px);
+  z-index: 10;
+}
+
+.pause-menu.hidden { display: none; }
+
+.pause-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.pause-title {
+  font-size: 20px;
+  color: var(--glow);
+  text-shadow: 0 0 10px var(--glow), 0 0 30px var(--glow);
+  margin-bottom: 8px;
+  letter-spacing: 4px;
+}
+
+.menu-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: var(--text);
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  padding: 10px 20px;
+  cursor: pointer;
+  width: 180px;
+  text-align: center;
+  transition: background .15s, color .15s, border-color .15s;
+  letter-spacing: 1px;
+}
+
+.menu-btn:hover {
+  background: #1a2a3a;
+  border-color: var(--glow);
+  color: var(--glow);
+  text-shadow: 0 0 8px var(--glow);
+}
+
+.menu-btn.quit:hover {
+  border-color: var(--glow2);
+  color: var(--glow2);
+  text-shadow: 0 0 8px var(--glow2);
+}
+
 /* ── animations ───────────────────────────────── */
 @keyframes blink {
   50% { opacity: 0; }
