@@ -1,19 +1,31 @@
-# 🎨 Special-Playground
+<div align="center">
 
-> 내가 만들고, 실험하고, 노는 공간
+# 🎨 Special Playground
 
----
+**만들고, 실험하고, 노는 공간**
 
-## Projects
-
-| 프로젝트 | 설명 |
-|---------|------|
-| 🎮 **Tetris** | 바닐라 JS 테트리스 |
+[![GitHub Pages](https://img.shields.io/badge/Homepage-Visit-4a3f35?style=for-the-badge&logo=github&logoColor=white)](https://ashes331.github.io/Special-Playground/)
+[![GitHub](https://img.shields.io/badge/GitHub-ashes331-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ashes331)
 
 ---
 
-## About
+### 🛠️ Stack
 
-개인적으로 만들어보고 싶은 것들을 실험하는 저장소입니다.
+![HTML](https://img.shields.io/badge/HTML-E34F26?style=flat-square&logo=html5&logoColor=white)
+![CSS](https://img.shields.io/badge/CSS-1572B6?style=flat-square&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
 
-🌐 **[홈페이지 바로가기](https://ashes331.github.io/Special-Playground/)**
+---
+
+### 📁 Projects
+
+| 프로젝트 | 분류 | 설명 | 바로가기 |
+|:-------:|:----:|:----:|:-------:|
+| 🎮 **Tetris** | Game | 바닐라 JS 테트리스 | [▶ PLAY](https://ashes331.github.io/Special-Playground/tetris/) |
+
+---
+
+<sub>© 2025 ashes331 · Special Playground</sub>
+
+</div>
