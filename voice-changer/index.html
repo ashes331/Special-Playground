@@ -220,7 +220,8 @@
   .toggle-wrap input { opacity: 0; width: 0; height: 0; position: absolute; }
   .tog-track {
     position: absolute; inset: 0;
-    background: var(--border-active);
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
     border-radius: 20px; cursor: pointer;
     transition: background 0.2s;
   }
@@ -228,7 +229,7 @@
     content: '';
     position: absolute;
     width: 14px; height: 14px;
-    background: #555;
+    background: #aaa;
     border-radius: 50%;
     top: 3px; left: 3px;
     transition: transform 0.2s, background 0.2s;
