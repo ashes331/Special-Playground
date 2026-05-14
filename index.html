@@ -33,9 +33,7 @@
     }
 
     /* ── 히어로 ── */
-    .hero {
-      margin-bottom: 56px;
-    }
+    .hero { margin-bottom: 56px; }
 
     .hero-label {
       font-family: 'DM Mono', monospace;
@@ -55,10 +53,7 @@
       margin-bottom: 18px;
     }
 
-    .hero-title span {
-      color: var(--tag);
-      font-weight: 300;
-    }
+    .hero-title span { color: var(--tag); font-weight: 300; }
 
     .hero-desc {
       font-size: 16px;
@@ -122,11 +117,7 @@
     .nav-item:hover { background: rgba(255,255,255,0.08); }
     .nav-item.active { background: rgba(255,255,255,0.12); }
 
-    .nav-icon {
-      font-size: 16px;
-      width: 20px;
-      text-align: center;
-    }
+    .nav-icon { font-size: 16px; width: 20px; text-align: center; }
 
     .nav-text {
       font-size: 13px;
@@ -195,7 +186,7 @@
       display: flex;
       align-items: center;
       gap: 18px;
-      transition: box-shadow .2s, transform .2s, border-color .2s;
+      transition: box-shadow .2s, transform .2s, border-color .2s, opacity .2s;
     }
 
     .proj-card:hover {
@@ -203,6 +194,8 @@
       border-color: #ccc8c2;
       transform: translateY(-2px);
     }
+
+    .proj-card.hidden { display: none; }
 
     .proj-thumb {
       width: 48px; height: 48px;
@@ -242,10 +235,7 @@
       transition: color .2s, transform .2s;
     }
 
-    .proj-card:hover .proj-arrow {
-      color: var(--tag);
-      transform: translateX(3px);
-    }
+    .proj-card:hover .proj-arrow { color: var(--tag); transform: translateX(3px); }
 
     /* 빈 카드 */
     .proj-empty {
@@ -257,6 +247,8 @@
       gap: 18px;
     }
 
+    .proj-empty.hidden { display: none; }
+
     .proj-empty-thumb {
       width: 48px; height: 48px;
       background: var(--bg);
@@ -265,19 +257,16 @@
       flex-shrink: 0;
     }
 
-    .proj-empty-text {
-      font-size: 13px;
-      color: var(--border);
-    }
+    .proj-empty-text { font-size: 13px; color: var(--border); }
 
     /* ── 페이드인 ── */
     .hero, .section-label, .dashboard {
       opacity: 0; transform: translateY(14px);
       animation: up .5s ease forwards;
     }
-    .hero         { animation-delay: .05s; }
-    .section-label{ animation-delay: .15s; }
-    .dashboard    { animation-delay: .22s; }
+    .hero          { animation-delay: .05s; }
+    .section-label { animation-delay: .15s; }
+    .dashboard     { animation-delay: .22s; }
 
     @keyframes up { to { opacity:1; transform:translateY(0); } }
   </style>
@@ -299,17 +288,17 @@
     <!-- 사이드바 -->
     <div class="sidebar">
       <div class="sidebar-title">CATEGORY</div>
-      <a class="nav-item active" href="#">
+      <a class="nav-item active" href="#" data-filter="game">
         <span class="nav-icon">🎮</span>
         <span class="nav-text">Games</span>
         <span class="nav-num">1</span>
       </a>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="#" data-filter="tool">
         <span class="nav-icon">🔧</span>
         <span class="nav-text">Tools</span>
         <span class="nav-num">1</span>
       </a>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="#" data-filter="etc">
         <span class="nav-icon">✦</span>
         <span class="nav-text">Etc</span>
         <span class="nav-num">0</span>
@@ -321,11 +310,11 @@
     <!-- 메인 패널 -->
     <div class="main-panel">
       <div class="panel-header">
-        <div class="panel-title">ALL PROJECTS</div>
-        <div class="panel-count">2 / ∞</div>
+        <div class="panel-title" id="panel-title">GAMES</div>
+        <div class="panel-count" id="panel-count">1 / ∞</div>
       </div>
 
-      <a class="proj-card" href="./tetris/" target="_blank">
+      <a class="proj-card" href="./tetris/" target="_blank" data-category="game">
         <div class="proj-thumb">🎮</div>
         <div class="proj-info">
           <div class="proj-num">01 · GAME</div>
@@ -335,7 +324,7 @@
         <div class="proj-arrow">→</div>
       </a>
 
-      <a class="proj-card" href="./voice-changer/" target="_blank">
+      <a class="proj-card hidden" href="./voice-changer/" target="_blank" data-category="tool">
         <div class="proj-thumb">🎙️</div>
         <div class="proj-info">
           <div class="proj-num">02 · TOOL</div>
@@ -345,7 +334,7 @@
         <div class="proj-arrow">→</div>
       </a>
 
-      <div class="proj-empty">
+      <div class="proj-empty" id="empty-card">
         <div class="proj-empty-thumb"></div>
         <div class="proj-empty-text">다음 프로젝트 준비 중...</div>
       </div>
@@ -354,5 +343,47 @@
   </div>
 
 </div>
+
+<script>
+  const LABELS = { game: 'GAMES', tool: 'TOOLS', etc: 'ETC' };
+
+  const navItems = document.querySelectorAll('.nav-item');
+  const cards    = document.querySelectorAll('.proj-card');
+  const empty    = document.getElementById('empty-card');
+  const title    = document.getElementById('panel-title');
+  const count    = document.getElementById('panel-count');
+
+  function filter(category) {
+    // nav active 처리
+    navItems.forEach(n => {
+      n.classList.toggle('active', n.dataset.filter === category);
+    });
+
+    // 카드 show/hide
+    let visible = 0;
+    cards.forEach(card => {
+      const match = card.dataset.category === category;
+      card.classList.toggle('hidden', !match);
+      if (match) visible++;
+    });
+
+    // 빈 카드: 해당 카테고리에 프로젝트가 없을 때만 표시
+    empty.classList.toggle('hidden', visible > 0);
+
+    // 패널 헤더 업데이트
+    title.textContent = LABELS[category] || category.toUpperCase();
+    count.textContent = visible + ' / ∞';
+  }
+
+  navItems.forEach(nav => {
+    nav.addEventListener('click', e => {
+      e.preventDefault();
+      filter(nav.dataset.filter);
+    });
+  });
+
+  // 초기 상태: Games
+  filter('game');
+</script>
 </body>
 </html>
