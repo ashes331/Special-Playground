@@ -288,7 +288,7 @@
     <!-- 사이드바 -->
     <div class="sidebar">
       <div class="sidebar-title">CATEGORY</div>
-      <a class="nav-item active" href="#" data-filter="game">
+      <a class="nav-item" href="#" data-filter="game">
         <span class="nav-icon">🎮</span>
         <span class="nav-text">Games</span>
         <span class="nav-num">1</span>
@@ -310,11 +310,11 @@
     <!-- 메인 패널 -->
     <div class="main-panel">
       <div class="panel-header">
-        <div class="panel-title" id="panel-title">GAMES</div>
-        <div class="panel-count" id="panel-count">1 / ∞</div>
+        <div class="panel-title" id="panel-title">카테고리를 선택하세요</div>
+        <div class="panel-count" id="panel-count"></div>
       </div>
 
-      <a class="proj-card" href="./tetris/" target="_blank" data-category="game">
+      <a class="proj-card hidden" href="./tetris/" target="_blank" data-category="game">
         <div class="proj-thumb">🎮</div>
         <div class="proj-info">
           <div class="proj-num">01 · GAME</div>
@@ -334,7 +334,7 @@
         <div class="proj-arrow">→</div>
       </a>
 
-      <div class="proj-empty" id="empty-card">
+      <div class="proj-empty hidden" id="empty-card">
         <div class="proj-empty-thumb"></div>
         <div class="proj-empty-text">다음 프로젝트 준비 중...</div>
       </div>
@@ -381,9 +381,6 @@
       filter(nav.dataset.filter);
     });
   });
-
-  // 초기 상태: Games
-  filter('game');
 </script>
 </body>
 </html>
