@@ -7,7 +7,7 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
-  background:#000;
+  background:#3a2e1e;
   display:flex; flex-direction:column;
   align-items:center; justify-content:center;
   height:100vh; overflow:hidden;
@@ -21,42 +21,42 @@ canvas { display:block; width:800px; height:450px; }
 }
 #score {
   position:absolute; top:16px; right:20px;
-  color:rgba(255,255,255,0.7); font-size:13px; letter-spacing:3px;
+  color:rgba(220,195,140,0.9); font-size:13px; letter-spacing:3px;
 }
 #meterWrap {
   position:absolute; top:16px; left:20px;
   display:flex; align-items:center; gap:8px;
 }
-#meterLabel { color:rgba(255,80,40,0.9); font-size:11px; letter-spacing:2px; }
+#meterLabel { color:rgba(210,140,50,0.95); font-size:11px; letter-spacing:2px; }
 #meterTrack {
   width:100px; height:4px;
-  background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;
+  background:rgba(180,150,80,0.2); border-radius:2px; overflow:hidden;
 }
 #meterFill {
-  height:100%; background:#ff3a1a; border-radius:2px;
+  height:100%; background:#c8821a; border-radius:2px;
   transition:width 0.1s;
 }
 #overlay {
   position:absolute; top:0; left:0; right:0; bottom:0;
-  background:rgba(0,0,0,0.88);
+  background:rgba(30,22,10,0.92);
   display:flex; flex-direction:column;
   align-items:center; justify-content:center;
   pointer-events:all; cursor:pointer;
 }
 #overlay h1 {
-  color:#fff; font-size:38px; letter-spacing:14px;
+  color:#e8d5a0; font-size:38px; letter-spacing:14px;
   text-transform:uppercase; margin-bottom:6px;
 }
-.sub { color:rgba(255,70,30,0.9); font-size:11px; letter-spacing:4px; margin-bottom:44px; }
-.hint { color:rgba(255,255,255,0.35); font-size:11px; letter-spacing:3px; }
+.sub { color:rgba(200,140,50,0.9); font-size:11px; letter-spacing:4px; margin-bottom:44px; }
+.hint { color:rgba(200,180,120,0.45); font-size:11px; letter-spacing:3px; }
 .keys { display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; justify-content:center; }
 .key {
-  border:1px solid rgba(255,255,255,0.15);
-  padding:5px 12px; color:rgba(255,255,255,0.45);
+  border:1px solid rgba(200,160,80,0.2);
+  padding:5px 12px; color:rgba(200,170,100,0.5);
   font-size:10px; letter-spacing:1px; border-radius:3px;
   font-family:'Courier New',monospace;
 }
-#gscore { color:rgba(255,255,255,0.55); font-size:13px; letter-spacing:4px; margin-bottom:14px; display:none; }
+#gscore { color:rgba(220,195,140,0.65); font-size:13px; letter-spacing:4px; margin-bottom:14px; display:none; }
 </style>
 </head>
 <body>
@@ -274,17 +274,26 @@ function killPlayer() {
 
 // ── 렌더 ──
 function drawSky() {
-  // 하늘은 소실점(VP.y) 위를 꽉 채움
-  ctx.fillStyle='#060306'; ctx.fillRect(0, 0, W, VP.y + 5);
-  ctx.fillStyle='rgba(255,210,160,0.06)';
-  ctx.beginPath(); ctx.arc(W*0.72, 38, 20, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle='rgba(255,200,140,0.03)';
-  ctx.beginPath(); ctx.arc(W*0.72, 38, 36, 0, Math.PI*2); ctx.fill();
-  for(let i=0;i<18;i++){
-    const sx=(i*137)%W, sy=(i*53)%(VP.y-10);
-    const sa=0.15+Math.sin(frame*0.02+i)*0.1;
-    ctx.fillStyle=`rgba(255,220,200,${sa})`;
-    ctx.fillRect(sx, sy, 1, 1);
+  // 밝은 낮 하늘 — 위는 탁한 파랑, 지평선은 황토 먼지
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, VP.y + 5);
+  skyGrad.addColorStop(0,   '#7a8fa8');
+  skyGrad.addColorStop(0.5, '#a89870');
+  skyGrad.addColorStop(1,   '#c8a855');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, W, VP.y + 5);
+
+  // 태양 (왼쪽 위)
+  ctx.fillStyle = 'rgba(255,235,160,0.55)';
+  ctx.beginPath(); ctx.arc(W*0.18, 55, 28, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,245,200,0.3)';
+  ctx.beginPath(); ctx.arc(W*0.18, 55, 44, 0, Math.PI*2); ctx.fill();
+
+  // 먼지 구름
+  for(let i=0;i<5;i++){
+    const cx2=(i*173+frame*0.08)%W;
+    const cy2=30+i*22;
+    ctx.fillStyle=`rgba(190,160,90,${0.06+i*0.02})`;
+    ctx.beginPath(); ctx.ellipse(cx2, cy2, 60+i*20, 14+i*4, 0, 0, Math.PI*2); ctx.fill();
   }
 }
 
@@ -295,29 +304,39 @@ function drawBuildings() {
     const s=lp.scale;
     const a=Math.min(0.98, s*2.8);
 
-    // 건물은 도로 옆에서 위로 솟음 (lp.y가 도로면, 건물은 위로)
+    // 왼쪽 건물 — 콘크리트 회갈색
     const lh=seg.lH*s, lw=seg.lW*s;
-    ctx.fillStyle=`rgba(8,4,7,${a})`;
-    ctx.fillRect(lp.x - lw, lp.y - lh, lw, lh);
-    if(seg.win && Math.sin(frame*0.025+seg.phase)>0.2){
-      ctx.fillStyle=`rgba(255,90,30,${0.1*a})`;
-      ctx.fillRect(lp.x - lw*0.75, lp.y - lh*0.65, lw*0.28, lh*0.2);
+    const lc = `rgba(${110+Math.floor(seg.phase%20)},${95+Math.floor(seg.phase%15)},${70+Math.floor(seg.phase%10)},${a})`;
+    ctx.fillStyle=lc;
+    ctx.fillRect(lp.x-lw, lp.y-lh, lw, lh);
+    // 균열/창문
+    ctx.fillStyle=`rgba(60,50,35,${0.4*a})`;
+    ctx.fillRect(lp.x-lw+lw*0.15, lp.y-lh*0.75, lw*0.22, lh*0.18);
+    ctx.fillRect(lp.x-lw+lw*0.55, lp.y-lh*0.45, lw*0.22, lh*0.18);
+    // 상단 파손
+    if(seg.win){
+      ctx.fillStyle=`rgba(80,65,40,${0.6*a})`;
+      ctx.fillRect(lp.x-lw, lp.y-lh, lw*0.35, lh*0.12);
     }
 
+    // 오른쪽 건물
     const rh=seg.rH*s, rw=seg.rW*s;
-    ctx.fillStyle=`rgba(8,4,7,${a})`;
-    ctx.fillRect(rp.x, rp.y - rh, rw, rh);
-    if(seg.win && Math.sin(frame*0.025+seg.phase+2)>0.4){
-      ctx.fillStyle=`rgba(255,90,30,${0.1*a})`;
-      ctx.fillRect(rp.x + rw*0.28, rp.y - rh*0.55, rw*0.28, rh*0.2);
+    const rc = `rgba(${100+Math.floor(seg.phase%18)},${88+Math.floor(seg.phase%12)},${65+Math.floor(seg.phase%8)},${a})`;
+    ctx.fillStyle=rc;
+    ctx.fillRect(rp.x, rp.y-rh, rw, rh);
+    ctx.fillStyle=`rgba(60,50,35,${0.4*a})`;
+    ctx.fillRect(rp.x+rw*0.2, rp.y-rh*0.6, rw*0.22, rh*0.18);
+    ctx.fillRect(rp.x+rw*0.6, rp.y-rh*0.35, rw*0.22, rh*0.18);
+    if(seg.win){
+      ctx.fillStyle=`rgba(80,65,40,${0.55*a})`;
+      ctx.fillRect(rp.x+rw*0.5, rp.y-rh, rw*0.5, rh*0.1);
     }
   }
 }
 
 function drawRoad() {
-  // z=0 → 화면 아래(GROUND_Y), z=ZDEPTH → 소실점(VP.y)
-  // 지면: 소실점에서 좌우로 벌어지며 화면 아래로 내려옴
-  ctx.fillStyle='#100710';
+  // 갈라진 아스팔트 — 황토+회색
+  ctx.fillStyle='#5a4e38';
   ctx.beginPath();
   const farL=project(-1.5, ZDEPTH), farR=project(1.5, ZDEPTH);
   const nearL=project(-1.5, 0),     nearR=project(1.5, 0);
@@ -325,22 +344,29 @@ function drawRoad() {
   ctx.lineTo(farR.x, farR.y); ctx.lineTo(farL.x, farL.y);
   ctx.closePath(); ctx.fill();
 
-  // 레인 경계: 소실점(위) → 카메라 앞(아래)
+  // 노면 질감 — 먼지/모래
+  ctx.fillStyle='rgba(180,155,100,0.12)';
+  ctx.beginPath();
+  ctx.moveTo(nearL.x, H); ctx.lineTo(nearR.x, H);
+  ctx.lineTo(farR.x, farR.y); ctx.lineTo(farL.x, farL.y);
+  ctx.closePath(); ctx.fill();
+
+  // 레인 경계 — 바랜 흰색 차선
   for(let li=0;li<4;li++){
     const wx=-1.5+li;
     const near=project(wx, 2), far=project(wx, ZDEPTH);
-    ctx.strokeStyle=li===0||li===3?'rgba(255,45,18,0.4)':'rgba(255,45,18,0.18)';
-    ctx.lineWidth=li===0||li===3?1.5:0.8;
-    ctx.setLineDash(li===0||li===3?[]:[4,14]);
+    ctx.strokeStyle=li===0||li===3?'rgba(200,180,120,0.55)':'rgba(200,180,120,0.25)';
+    ctx.lineWidth=li===0||li===3?2:0.8;
+    ctx.setLineDash(li===0||li===3?[]:[5,12]);
     ctx.beginPath(); ctx.moveTo(far.x, far.y); ctx.lineTo(near.x, near.y); ctx.stroke();
   }
   ctx.setLineDash([]);
 
-  // 바닥 균열 스크롤
-  for(let ci=0;ci<6;ci++){
-    const zp=((ci/6*28)+roadOffset)%28+1;
-    const p1=project(-0.25+ci*0.08,zp), p2=project(0.25+ci*0.08,zp);
-    ctx.strokeStyle='rgba(70,35,25,0.22)'; ctx.lineWidth=0.5;
+  // 균열 스크롤
+  for(let ci=0;ci<8;ci++){
+    const zp=((ci/8*28)+roadOffset)%28+1;
+    const p1=project(-1.2+ci*0.3, zp), p2=project(-0.8+ci*0.3, zp);
+    ctx.strokeStyle='rgba(40,32,20,0.35)'; ctx.lineWidth=0.6;
     ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
   }
 }
@@ -351,22 +377,36 @@ function drawObs() {
     if(ob.z<0.5)continue;
     const p=project(LANE_X[ob.lane],ob.z), s=p.scale;
     if(ob.type==='barrier'){
-      const bw=24*s, bh=36*s;
-      ctx.fillStyle=`rgba(28,12,16,${0.65+s*0.35})`;
-      ctx.fillRect(p.x-bw/2,p.y-bh,bw,bh);
-      ctx.fillStyle=`rgba(255,45,18,${0.45+s*0.5})`;
-      ctx.fillRect(p.x-bw/2,p.y-bh,bw,3*s);
-      ctx.fillStyle=`rgba(18,8,10,0.85)`;
-      ctx.fillRect(p.x-bw/2,p.y-bh*0.52,bw,1.5*s);
-    } else {
-      const gw=48*s;
-      ctx.fillStyle='rgba(4,1,3,0.96)';
-      ctx.fillRect(p.x-gw/2,p.y-3*s,gw,8*s);
-      ctx.strokeStyle=`rgba(255,25,8,${0.35+s*0.4})`;
+      // 콘크리트 바리케이드 — 밝은 회색+주황 경고색
+      const bw=28*s, bh=38*s;
+      ctx.fillStyle=`rgba(160,140,100,${0.85+s*0.15})`;
+      ctx.fillRect(p.x-bw/2, p.y-bh, bw, bh);
+      // 경고 줄무늬 (주황/검정)
+      ctx.fillStyle=`rgba(220,120,20,${0.9+s*0.1})`;
+      ctx.fillRect(p.x-bw/2, p.y-bh,       bw, bh*0.2);
+      ctx.fillRect(p.x-bw/2, p.y-bh*0.55,  bw, bh*0.2);
+      ctx.fillStyle=`rgba(40,32,20,0.7)`;
+      ctx.fillRect(p.x-bw/2, p.y-bh*0.78,  bw, bh*0.2);
+      // 테두리
+      ctx.strokeStyle=`rgba(100,80,50,0.8)`;
       ctx.lineWidth=s*0.8;
-      ctx.strokeRect(p.x-gw/2,p.y-3*s,gw,8*s);
-      ctx.fillStyle=`rgba(255,20,8,0.12)`;
-      ctx.fillRect(p.x-gw/2+2,p.y-2*s,gw-4,6*s);
+      ctx.strokeRect(p.x-bw/2, p.y-bh, bw, bh);
+    } else {
+      // 갈라진 바닥 구멍 — 진한 갈색 테두리 + 어두운 속
+      const gw=52*s;
+      ctx.fillStyle='rgba(25,18,10,0.95)';
+      ctx.fillRect(p.x-gw/2, p.y-3*s, gw, 9*s);
+      ctx.strokeStyle=`rgba(180,140,70,${0.7+s*0.3})`;
+      ctx.lineWidth=s*1.2;
+      ctx.strokeRect(p.x-gw/2, p.y-3*s, gw, 9*s);
+      // 갈라짐 표시
+      ctx.strokeStyle=`rgba(220,170,80,${0.5+s*0.3})`;
+      ctx.lineWidth=s*0.6;
+      ctx.beginPath();
+      ctx.moveTo(p.x-gw*0.3, p.y-3*s);
+      ctx.lineTo(p.x, p.y+3*s);
+      ctx.lineTo(p.x+gw*0.25, p.y-3*s);
+      ctx.stroke();
     }
   }
 }
@@ -378,60 +418,71 @@ function drawPlayer() {
   const jOff = player.jumpZ * s * 3.2;
   const bx=p.x, by=p.y+jOff;
 
-  ctx.globalAlpha = player.dead ? 0.22 : 1;
+  ctx.globalAlpha = player.dead ? 0.25 : 1;
 
   if(player.sliding){
-    ctx.fillStyle='#d0c0c8'; ctx.fillRect(bx-13*s,by-8*s,26*s,10*s);
-    ctx.fillStyle='#e8d8e0'; ctx.fillRect(bx-7*s,by-16*s,14*s,9*s);
+    ctx.fillStyle='#2a2018'; ctx.fillRect(bx-13*s, by-8*s, 26*s, 10*s);
+    ctx.fillStyle='#3d3025'; ctx.fillRect(bx-7*s,  by-16*s, 14*s, 9*s);
   } else {
     const run=Math.sin(player.runT)*3.5*s;
-    ctx.fillStyle='#c0b0b8'; ctx.fillRect(bx-5*s,by-28*s,10*s,13*s);
-    ctx.fillStyle='#e0d0d8'; ctx.fillRect(bx-7*s,by-16*s,14*s,13*s);
-    ctx.fillStyle='#b0a0a8';
-    ctx.fillRect(bx-6*s,by-3*s,5*s,(9+run)*s);
-    ctx.fillRect(bx+1*s,by-3*s,5*s,(9-run)*s);
-    ctx.fillRect(bx-12*s,by-15*s+run*0.5,5*s,9*s);
-    ctx.fillRect(bx+7*s,by-15*s-run*0.5,5*s,9*s);
+    // 머리 (헬멧 느낌 — 짙은 카키)
+    ctx.fillStyle='#3a3020'; ctx.fillRect(bx-5*s, by-28*s, 10*s, 11*s);
+    // 몸 (방호복 — 어두운 올리브)
+    ctx.fillStyle='#2e2a1a'; ctx.fillRect(bx-7*s, by-18*s, 14*s, 15*s);
+    // 다리
+    ctx.fillStyle='#222018';
+    ctx.fillRect(bx-6*s, by-3*s, 5*s, (10+run)*s);
+    ctx.fillRect(bx+1*s, by-3*s, 5*s, (10-run)*s);
+    // 팔
+    ctx.fillRect(bx-12*s, by-17*s+run*0.5, 5*s, 9*s);
+    ctx.fillRect(bx+7*s,  by-17*s-run*0.5, 5*s, 9*s);
+    // 배낭 (밝은 포인트)
+    ctx.fillStyle='#5a4a28';
+    ctx.fillRect(bx+5*s, by-17*s, 5*s, 10*s);
   }
 
-  ctx.globalAlpha = player.dead?0.08:0.18;
-  ctx.fillStyle='#000'; ctx.save(); ctx.scale(1,0.28);
-  ctx.beginPath(); ctx.ellipse(bx,p.y/0.28,10*s,5*s,0,0,Math.PI*2); ctx.fill();
+  // 발그림자
+  ctx.globalAlpha = player.dead ? 0.08 : 0.22;
+  ctx.fillStyle='rgba(30,22,10,1)'; ctx.save(); ctx.scale(1,0.28);
+  ctx.beginPath(); ctx.ellipse(bx, p.y/0.28, 10*s, 5*s, 0, 0, Math.PI*2); ctx.fill();
   ctx.restore();
   ctx.globalAlpha=1;
 }
 
 function drawMonster() {
-  // monsterZ: -80(멀리뒤) ~ 0(잡힘). 괴물은 플레이어보다 z 작음 = 화면 아래(가까이)
   const mz = Math.max(0.3, player.z + monsterZ * 0.1);
   const waveX=Math.sin(frame*0.04)*0.12;
   const mp=project(waveX, mz);
   const s=mp.scale;
   const bob=Math.sin(frame*0.07)*3;
-  ctx.globalAlpha=Math.min(0.97,0.25+s*1.6);
+  ctx.globalAlpha=Math.min(0.97, 0.3+s*1.5);
   const mx=mp.x, my=mp.y+bob;
 
-  ctx.fillStyle=`rgba(255,28,8,${Math.min(1,0.5+s*0.9)})`;
-  ctx.beginPath(); ctx.ellipse(mx-7*s,my-28*s,5*s,6*s,-0.3,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(mx+7*s,my-28*s,5*s,6*s,0.3,0,Math.PI*2); ctx.fill();
+  // 눈 — 밝은 황록 (낮에도 잘 보임)
+  ctx.fillStyle=`rgba(180,220,40,${Math.min(1,0.7+s*0.5)})`;
+  ctx.beginPath(); ctx.ellipse(mx-7*s, my-28*s, 5*s, 6*s, -0.3, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(mx+7*s, my-28*s, 5*s, 6*s,  0.3, 0, Math.PI*2); ctx.fill();
 
-  ctx.fillStyle='rgba(65,7,4,0.95)';
-  ctx.beginPath(); ctx.ellipse(mx,my-17*s,22*s,26*s,0,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='rgba(38,4,2,0.9)';
-  ctx.beginPath(); ctx.ellipse(mx,my+7*s,14*s,20*s,0,0,Math.PI*2); ctx.fill();
+  // 몸통 — 짙은 회갈색 (먼지 뒤덮인 느낌)
+  ctx.fillStyle='rgba(55,42,28,0.97)';
+  ctx.beginPath(); ctx.ellipse(mx, my-17*s, 22*s, 26*s, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(38,28,16,0.92)';
+  ctx.beginPath(); ctx.ellipse(mx, my+7*s, 14*s, 20*s, 0, 0, Math.PI*2); ctx.fill();
 
+  // 팔
   const armSw=Math.sin(frame*0.08)*14;
-  ctx.fillStyle='rgba(50,6,3,0.9)';
-  ctx.beginPath(); ctx.ellipse(mx-26*s,my-7*s+armSw*s,7*s,16*s,0.4,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(mx+26*s,my-7*s-armSw*s,7*s,16*s,-0.4,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(45,34,20,0.92)';
+  ctx.beginPath(); ctx.ellipse(mx-26*s, my-7*s+armSw*s, 7*s, 16*s,  0.4, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(mx+26*s, my-7*s-armSw*s, 7*s, 16*s, -0.4, 0, Math.PI*2); ctx.fill();
 
+  // 먼지 안개 — 황토색
   const prox=1+monsterZ/80;
-  if(prox>0.25){
-    const fog=ctx.createRadialGradient(mx,my,8*s,mx,my,95*s);
-    fog.addColorStop(0,`rgba(150,12,6,${prox*0.14})`);
-    fog.addColorStop(1,'transparent');
+  if(prox>0.2){
+    const fog=ctx.createRadialGradient(mx, my, 8*s, mx, my, 100*s);
+    fog.addColorStop(0, `rgba(140,100,40,${prox*0.18})`);
+    fog.addColorStop(1, 'transparent');
     ctx.fillStyle=fog;
-    ctx.beginPath(); ctx.ellipse(mx,my,95*s,75*s,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(mx, my, 100*s, 80*s, 0, 0, Math.PI*2); ctx.fill();
   }
   ctx.globalAlpha=1;
 }
@@ -439,20 +490,27 @@ function drawMonster() {
 function drawParticles() {
   for(const p of particles){
     ctx.globalAlpha=p.life*0.85;
-    ctx.fillStyle=p.death?'rgba(255,70,30,1)':'rgba(190,140,110,1)';
-    ctx.fillRect(p.x-p.size/2,p.y-p.size/2,p.size,p.size);
+    ctx.fillStyle=p.death?'rgba(200,150,50,1)':'rgba(160,130,80,1)';
+    ctx.fillRect(p.x-p.size/2, p.y-p.size/2, p.size, p.size);
   }
   ctx.globalAlpha=1;
 }
 
 function drawVignette() {
-  const vig=ctx.createRadialGradient(W/2,H/2,H*0.12,W/2,H/2,H*0.88);
+  // 주변 살짝 어둡게 (과도하지 않게)
+  const vig=ctx.createRadialGradient(W/2,H/2,H*0.2,W/2,H/2,H*0.9);
   vig.addColorStop(0,'transparent');
-  vig.addColorStop(1,'rgba(0,0,0,0.78)');
+  vig.addColorStop(1,'rgba(20,14,6,0.5)');
   ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
+
+  // 먼지 오버레이 — 항상 약하게
+  ctx.fillStyle='rgba(180,150,80,0.04)';
+  ctx.fillRect(0,0,W,H);
+
+  // 괴물 근접 시 황토 먼지 강해짐
   const prox=1+monsterZ/80;
-  if(prox>0.45){
-    ctx.fillStyle=`rgba(110,7,3,${(prox-0.45)*0.2})`;
+  if(prox>0.4){
+    ctx.fillStyle=`rgba(140,100,30,${(prox-0.4)*0.15})`;
     ctx.fillRect(0,0,W,H);
   }
 }
