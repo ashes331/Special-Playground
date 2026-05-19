@@ -88,14 +88,16 @@ const C = document.getElementById('c');
 const ctx = C.getContext('2d');
 const W = 800, H = 450;
 
-const VP = { x: W/2, y: 155 };
-const CAM_H = 85;
+const VP = { x: W/2, y: 175 };  // 소실점: 화면 중간 약간 위
+const GROUND_Y = H - 30;         // 카메라 바로 앞 지면 y
 const ZDEPTH = 200;
 
 function project(wx, wz) {
-  const scale = CAM_H / (wz + CAM_H);
-  const sx = VP.x + wx * scale * 155;
-  const sy = VP.y + (1 - scale) * (H - VP.y + 20);
+  // wz=0 → 카메라 바로 앞(GROUND_Y), wz=ZDEPTH → 소실점(VP.y)
+  const t = wz / ZDEPTH;                        // 0(가까움) ~ 1(멀리)
+  const sy = GROUND_Y + t * (VP.y - GROUND_Y);  // 가까우면 아래, 멀면 위
+  const scale = 1 - t * 0.85;                   // 가까우면 크게, 멀면 작게
+  const sx = VP.x + wx * scale * 170;
   return { x: sx, y: sy, scale };
 }
 
@@ -107,7 +109,7 @@ let monsterZ = -80;
 
 const player = {
   lane: 1, targetLane: 1, laneT: 1,
-  z: 8,
+  z: 12,
   vy: 0, jumpZ: 0, jumping: false,
   sliding: false, slideTimer: 0,
   dead: false, runT: 0,
@@ -272,64 +274,65 @@ function killPlayer() {
 
 // ── 렌더 ──
 function drawSky() {
-  ctx.fillStyle='#060306'; ctx.fillRect(0,0,W,VP.y+12);
+  // 하늘은 소실점(VP.y) 위를 꽉 채움
+  ctx.fillStyle='#060306'; ctx.fillRect(0, 0, W, VP.y + 5);
   ctx.fillStyle='rgba(255,210,160,0.06)';
-  ctx.beginPath(); ctx.arc(W*0.72,38,20,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(W*0.72, 38, 20, 0, Math.PI*2); ctx.fill();
   ctx.fillStyle='rgba(255,200,140,0.03)';
-  ctx.beginPath(); ctx.arc(W*0.72,38,36,0,Math.PI*2); ctx.fill();
-  // 별
+  ctx.beginPath(); ctx.arc(W*0.72, 38, 36, 0, Math.PI*2); ctx.fill();
   for(let i=0;i<18;i++){
-    const sx=(i*137)%W, sy=(i*53)%VP.y;
+    const sx=(i*137)%W, sy=(i*53)%(VP.y-10);
     const sa=0.15+Math.sin(frame*0.02+i)*0.1;
     ctx.fillStyle=`rgba(255,220,200,${sa})`;
-    ctx.fillRect(sx,sy,1,1);
+    ctx.fillRect(sx, sy, 1, 1);
   }
 }
 
 function drawBuildings() {
   const sorted=[...bgSegs].sort((a,b)=>b.z-a.z);
   for(const seg of sorted){
-    const lp=project(-2.0,seg.z), rp=project(2.0,seg.z);
+    const lp=project(-2.0, seg.z), rp=project(2.0, seg.z);
     const s=lp.scale;
-    const a=Math.min(0.98,s*2.8);
+    const a=Math.min(0.98, s*2.8);
 
-    // 왼쪽
+    // 건물은 도로 옆에서 위로 솟음 (lp.y가 도로면, 건물은 위로)
     const lh=seg.lH*s, lw=seg.lW*s;
     ctx.fillStyle=`rgba(8,4,7,${a})`;
-    ctx.fillRect(lp.x-lw, lp.y-lh, lw, lh);
-    if(seg.win&&Math.sin(frame*0.025+seg.phase)>0.2){
+    ctx.fillRect(lp.x - lw, lp.y - lh, lw, lh);
+    if(seg.win && Math.sin(frame*0.025+seg.phase)>0.2){
       ctx.fillStyle=`rgba(255,90,30,${0.1*a})`;
-      ctx.fillRect(lp.x-lw*0.75, lp.y-lh*0.65, lw*0.28, lh*0.2);
+      ctx.fillRect(lp.x - lw*0.75, lp.y - lh*0.65, lw*0.28, lh*0.2);
     }
 
-    // 오른쪽
     const rh=seg.rH*s, rw=seg.rW*s;
     ctx.fillStyle=`rgba(8,4,7,${a})`;
-    ctx.fillRect(rp.x, rp.y-rh, rw, rh);
-    if(seg.win&&Math.sin(frame*0.025+seg.phase+2)>0.4){
+    ctx.fillRect(rp.x, rp.y - rh, rw, rh);
+    if(seg.win && Math.sin(frame*0.025+seg.phase+2)>0.4){
       ctx.fillStyle=`rgba(255,90,30,${0.1*a})`;
-      ctx.fillRect(rp.x+rw*0.28, rp.y-rh*0.55, rw*0.28, rh*0.2);
+      ctx.fillRect(rp.x + rw*0.28, rp.y - rh*0.55, rw*0.28, rh*0.2);
     }
   }
 }
 
 function drawRoad() {
-  // 지면
+  // z=0 → 화면 아래(GROUND_Y), z=ZDEPTH → 소실점(VP.y)
+  // 지면: 소실점에서 좌우로 벌어지며 화면 아래로 내려옴
   ctx.fillStyle='#100710';
   ctx.beginPath();
-  const bl=project(-1.5,ZDEPTH), br=project(1.5,ZDEPTH);
-  ctx.moveTo(0,H); ctx.lineTo(W,H);
-  ctx.lineTo(br.x,br.y); ctx.lineTo(bl.x,bl.y);
+  const farL=project(-1.5, ZDEPTH), farR=project(1.5, ZDEPTH);
+  const nearL=project(-1.5, 0),     nearR=project(1.5, 0);
+  ctx.moveTo(nearL.x, H); ctx.lineTo(nearR.x, H);
+  ctx.lineTo(farR.x, farR.y); ctx.lineTo(farL.x, farL.y);
   ctx.closePath(); ctx.fill();
 
-  // 레인 경계
+  // 레인 경계: 소실점(위) → 카메라 앞(아래)
   for(let li=0;li<4;li++){
     const wx=-1.5+li;
-    const near=project(wx,3), far=project(wx,ZDEPTH);
+    const near=project(wx, 2), far=project(wx, ZDEPTH);
     ctx.strokeStyle=li===0||li===3?'rgba(255,45,18,0.4)':'rgba(255,45,18,0.18)';
     ctx.lineWidth=li===0||li===3?1.5:0.8;
     ctx.setLineDash(li===0||li===3?[]:[4,14]);
-    ctx.beginPath(); ctx.moveTo(far.x,far.y); ctx.lineTo(near.x,near.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(far.x, far.y); ctx.lineTo(near.x, near.y); ctx.stroke();
   }
   ctx.setLineDash([]);
 
@@ -399,10 +402,10 @@ function drawPlayer() {
 }
 
 function drawMonster() {
-  const mz = player.z - monsterZ * 0.28;
-  if(mz<=0.3)return;
+  // monsterZ: -80(멀리뒤) ~ 0(잡힘). 괴물은 플레이어보다 z 작음 = 화면 아래(가까이)
+  const mz = Math.max(0.3, player.z + monsterZ * 0.1);
   const waveX=Math.sin(frame*0.04)*0.12;
-  const mp=project(waveX,Math.max(0.5,mz));
+  const mp=project(waveX, mz);
   const s=mp.scale;
   const bob=Math.sin(frame*0.07)*3;
   ctx.globalAlpha=Math.min(0.97,0.25+s*1.6);
