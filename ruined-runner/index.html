@@ -7,7 +7,7 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
-  background:#1e2820;
+  background:#2a3828;
   display:flex; flex-direction:column;
   align-items:center; justify-content:center;
   height:100vh; overflow:hidden;
@@ -21,42 +21,130 @@ canvas { display:block; width:800px; height:450px; }
 }
 #score {
   position:absolute; top:16px; right:20px;
-  color:rgba(200,215,190,0.85); font-size:13px; letter-spacing:3px;
+  color:rgba(210,230,190,0.9); font-size:13px; letter-spacing:3px;
 }
 #meterWrap {
   position:absolute; top:16px; left:20px;
   display:flex; align-items:center; gap:8px;
 }
-#meterLabel { color:rgba(180,200,140,0.9); font-size:11px; letter-spacing:2px; }
+#meterLabel { color:rgba(190,215,140,0.95); font-size:11px; letter-spacing:2px; }
 #meterTrack {
   width:100px; height:4px;
-  background:rgba(100,120,80,0.25); border-radius:2px; overflow:hidden;
+  background:rgba(100,130,80,0.3); border-radius:2px; overflow:hidden;
 }
 #meterFill {
-  height:100%; background:#7aaa38; border-radius:2px;
+  height:100%; background:#8abe42; border-radius:2px;
   transition:width 0.1s;
 }
+
 #overlay {
   position:absolute; top:0; left:0; right:0; bottom:0;
-  background:rgba(10,16,10,0.92);
   display:flex; flex-direction:column;
   align-items:center; justify-content:center;
   pointer-events:all; cursor:pointer;
+  overflow:hidden;
 }
+
+/* 배경 캔버스 (타이틀용) */
+#overlayBg {
+  position:absolute; top:0; left:0; right:0; bottom:0;
+  background: linear-gradient(180deg, rgba(8,18,10,0.82) 0%, rgba(14,28,14,0.75) 50%, rgba(6,14,8,0.9) 100%);
+}
+
+.ov-content {
+  position:relative; z-index:2;
+  display:flex; flex-direction:column;
+  align-items:center;
+}
+
+/* 타이틀 */
+.title-wrap { position:relative; margin-bottom:6px; }
+
 #overlay h1 {
-  color:#c8d8b8; font-size:38px; letter-spacing:14px;
-  text-transform:uppercase; margin-bottom:6px;
+  color:#d8eec0;
+  font-size:62px;
+  letter-spacing:22px;
+  text-transform:uppercase;
+  text-indent:22px;
+  font-weight:normal;
+  text-shadow: 0 0 40px rgba(140,200,80,0.35), 0 2px 0 rgba(0,0,0,0.6);
+  animation: titlePulse 3s ease-in-out infinite;
 }
-.sub { color:rgba(140,180,100,0.85); font-size:11px; letter-spacing:4px; margin-bottom:44px; }
-.hint { color:rgba(160,190,140,0.4); font-size:11px; letter-spacing:3px; }
-.keys { display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; justify-content:center; }
-.key {
-  border:1px solid rgba(140,170,110,0.2);
-  padding:5px 12px; color:rgba(160,190,140,0.45);
-  font-size:10px; letter-spacing:1px; border-radius:3px;
+
+@keyframes titlePulse {
+  0%,100% { text-shadow: 0 0 40px rgba(140,200,80,0.35), 0 2px 0 rgba(0,0,0,0.6); }
+  50%      { text-shadow: 0 0 70px rgba(160,220,90,0.55), 0 2px 0 rgba(0,0,0,0.6); }
+}
+
+/* 타이틀 아래 장식선 */
+.title-line {
+  width:320px; height:1px;
+  background: linear-gradient(90deg, transparent, rgba(160,210,100,0.6), transparent);
+  margin: 6px auto 0;
+}
+
+.sub {
+  color:rgba(170,210,120,0.9);
+  font-size:11px; letter-spacing:6px;
+  margin-top:10px; margin-bottom:0;
+  text-transform:uppercase;
+}
+
+/* 구분선 */
+.divider {
+  width:180px; height:1px;
+  background:rgba(140,180,90,0.2);
+  margin:28px 0 22px;
+}
+
+/* 점수 (게임오버 시) */
+#gscore {
+  color:rgba(210,235,170,0.85);
+  font-size:14px; letter-spacing:5px;
+  margin-bottom:18px; display:none;
+  text-transform:uppercase;
+}
+#gscore span { color:#a8d860; }
+
+/* 시작 버튼 느낌 */
+.start-btn {
+  border:1px solid rgba(160,210,100,0.45);
+  padding:10px 32px;
+  color:rgba(200,235,160,0.85);
+  font-size:11px; letter-spacing:4px;
+  border-radius:3px;
   font-family:'Courier New',monospace;
+  text-transform:uppercase;
+  animation: btnPulse 2s ease-in-out infinite;
+  margin-bottom:24px;
 }
-#gscore { color:rgba(190,210,170,0.65); font-size:13px; letter-spacing:4px; margin-bottom:14px; display:none; }
+@keyframes btnPulse {
+  0%,100% { border-color:rgba(160,210,100,0.35); color:rgba(200,235,160,0.7); }
+  50%      { border-color:rgba(160,210,100,0.75); color:rgba(220,245,180,1); }
+}
+
+/* 키 안내 */
+.keys {
+  display:flex; gap:8px;
+  flex-wrap:wrap; justify-content:center;
+}
+.key {
+  border:1px solid rgba(130,165,90,0.25);
+  padding:5px 10px;
+  color:rgba(170,200,130,0.55);
+  font-size:9px; letter-spacing:1.5px;
+  border-radius:2px;
+  font-family:'Courier New',monospace;
+  text-transform:uppercase;
+}
+
+/* 하단 플레이버 텍스트 */
+.flavor {
+  margin-top:20px;
+  color:rgba(130,165,100,0.35);
+  font-size:9px; letter-spacing:3px;
+  text-transform:uppercase;
+}
 </style>
 </head>
 <body>
@@ -70,15 +158,23 @@ canvas { display:block; width:800px; height:450px; }
     </div>
   </div>
   <div id="overlay" onclick="startGame()">
-    <h1>RUINED</h1>
-    <div class="sub">escape the dark</div>
-    <div id="gscore"></div>
-    <div class="hint">click or press space to run</div>
-    <div class="keys">
-      <div class="key">← A — LEFT LANE</div>
-      <div class="key">→ D — RIGHT LANE</div>
-      <div class="key">↑ W SPACE — JUMP</div>
-      <div class="key">↓ S — SLIDE</div>
+    <div id="overlayBg"></div>
+    <div class="ov-content">
+      <div class="title-wrap">
+        <h1 id="mainTitle">RUINED</h1>
+        <div class="title-line"></div>
+      </div>
+      <div class="sub" id="mainSub">escape the dark</div>
+      <div class="divider"></div>
+      <div id="gscore"></div>
+      <div class="start-btn" id="startBtn">click or press space to run</div>
+      <div class="keys">
+        <div class="key">← A — lane left</div>
+        <div class="key">→ D — lane right</div>
+        <div class="key">↑ W space — jump</div>
+        <div class="key">↓ S — slide</div>
+      </div>
+      <div class="flavor">survive as long as you can</div>
     </div>
   </div>
 </div>
@@ -185,6 +281,11 @@ function doSlide() { if(player.dead||player.sliding)return; player.sliding=true;
 
 function startGame() {
   document.getElementById('overlay').style.display='none';
+  document.getElementById('mainTitle').textContent='RUINED';
+  document.getElementById('mainSub').textContent='escape the dark';
+  document.getElementById('startBtn').textContent='click or press space to run';
+  document.getElementById('gscore').style.display='none';
+  document.querySelector('.flavor').textContent='survive as long as you can';
   state='playing'; score=0; frame=0; speed=0.8; monsterZ=-80;
   Object.assign(player,{lane:1,targetLane:1,laneT:1,jumping:false,jumpZ:0,vy:0,sliding:false,slideTimer:0,dead:false,runT:0});
   particles=[]; spawnInterval=90;
@@ -195,12 +296,13 @@ function gameOver() {
   state='dead';
   const ov=document.getElementById('overlay');
   ov.style.display='flex';
-  ov.querySelector('h1').textContent='CAUGHT';
-  ov.querySelector('.sub').textContent='the darkness got you';
-  ov.querySelector('.hint').textContent='click to try again';
+  document.getElementById('mainTitle').textContent='CAUGHT';
+  document.getElementById('mainSub').textContent='the horde got you';
+  document.getElementById('startBtn').textContent='click to try again';
   const gs=document.getElementById('gscore');
   gs.style.display='block';
-  gs.textContent=`DISTANCE ${Math.floor(score)} M`;
+  gs.innerHTML=`distance <span>${Math.floor(score)} m</span>`;
+  document.querySelector('.flavor').textContent='how far will you run next time?';
 }
 
 function update() {
