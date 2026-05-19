@@ -32,7 +32,6 @@
       padding: 72px 32px 80px;
     }
 
-    /* ── 히어로 ── */
     .hero { margin-bottom: 56px; }
 
     .hero-label {
@@ -63,7 +62,6 @@
       max-width: 420px;
     }
 
-    /* ── 구분 ── */
     .section-label {
       font-family: 'DM Mono', monospace;
       font-size: 10px;
@@ -75,7 +73,6 @@
       border-bottom: 1px solid var(--border);
     }
 
-    /* ── 대시보드 ── */
     .dashboard {
       display: grid;
       grid-template-columns: 220px 1fr;
@@ -83,7 +80,6 @@
       min-height: 320px;
     }
 
-    /* 사이드바 */
     .sidebar {
       background: var(--accent);
       border-radius: 16px;
@@ -145,7 +141,6 @@
       border-top: 1px solid rgba(255,255,255,0.06);
     }
 
-    /* 메인 패널 */
     .main-panel {
       background: var(--surface);
       border-radius: 16px;
@@ -176,7 +171,6 @@
       color: var(--border);
     }
 
-    /* 프로젝트 카드 */
     .proj-card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -237,7 +231,6 @@
 
     .proj-card:hover .proj-arrow { color: var(--tag); transform: translateX(3px); }
 
-    /* 빈 카드 */
     .proj-empty {
       border: 1.5px dashed var(--border);
       border-radius: 12px;
@@ -259,7 +252,6 @@
 
     .proj-empty-text { font-size: 13px; color: var(--border); }
 
-    /* ── 페이드인 ── */
     .hero, .section-label, .dashboard {
       opacity: 0; transform: translateY(14px);
       animation: up .5s ease forwards;
@@ -274,40 +266,36 @@
 <body>
 <div class="wrap">
 
-  <!-- 히어로 -->
   <div class="hero">
     <div class="hero-label">ashes331 · special-playground</div>
     <h1 class="hero-title">Special<br><span>Playground</span></h1>
     <p class="hero-desc">만들고 싶은 것들을 직접 만들어보는 공간입니다.<br>게임, 도구, 미니 프로젝트 등을 담아두고 있어요.</p>
   </div>
 
-  <!-- 대시보드 -->
   <div class="section-label">Projects</div>
   <div class="dashboard">
 
-    <!-- 사이드바 -->
     <div class="sidebar">
       <div class="sidebar-title">CATEGORY</div>
       <a class="nav-item" href="#" data-filter="game">
         <span class="nav-icon">🎮</span>
         <span class="nav-text">Games</span>
-        <span class="nav-num">1</span>
+        <span class="nav-num" id="count-game">2</span>
       </a>
       <a class="nav-item" href="#" data-filter="tool">
         <span class="nav-icon">🔧</span>
         <span class="nav-text">Tools</span>
-        <span class="nav-num">1</span>
+        <span class="nav-num" id="count-tool">1</span>
       </a>
       <a class="nav-item" href="#" data-filter="etc">
         <span class="nav-icon">✦</span>
         <span class="nav-text">Etc</span>
-        <span class="nav-num">0</span>
+        <span class="nav-num" id="count-etc">0</span>
       </a>
       <div class="sidebar-spacer"></div>
       <div class="sidebar-footer">2025</div>
     </div>
 
-    <!-- 메인 패널 -->
     <div class="main-panel">
       <div class="panel-header">
         <div class="panel-title" id="panel-title">카테고리를 선택하세요</div>
@@ -324,10 +312,21 @@
         <div class="proj-arrow">→</div>
       </a>
 
+      <!-- ↓ 추가된 카드 -->
+      <a class="proj-card hidden" href="./ruined-runner/" target="_blank" data-category="game">
+        <div class="proj-thumb">🏚️</div>
+        <div class="proj-info">
+          <div class="proj-num">02 · GAME</div>
+          <div class="proj-name">Ruined Runner</div>
+          <div class="proj-desc">무너진 도시에서 괴물을 피해 달리는 무한 러너</div>
+        </div>
+        <div class="proj-arrow">→</div>
+      </a>
+
       <a class="proj-card hidden" href="./voice-changer/" target="_blank" data-category="tool">
         <div class="proj-thumb">🎙️</div>
         <div class="proj-info">
-          <div class="proj-num">02 · TOOL</div>
+          <div class="proj-num">03 · TOOL</div>
           <div class="proj-name">Voice Changer</div>
           <div class="proj-desc">실시간 웹 보이스 체인저</div>
         </div>
@@ -354,12 +353,10 @@
   const count    = document.getElementById('panel-count');
 
   function filter(category) {
-    // nav active 처리
     navItems.forEach(n => {
       n.classList.toggle('active', n.dataset.filter === category);
     });
 
-    // 카드 show/hide
     let visible = 0;
     cards.forEach(card => {
       const match = card.dataset.category === category;
@@ -367,10 +364,7 @@
       if (match) visible++;
     });
 
-    // 빈 카드: 해당 카테고리에 프로젝트가 없을 때만 표시
     empty.classList.toggle('hidden', visible > 0);
-
-    // 패널 헤더 업데이트
     title.textContent = LABELS[category] || category.toUpperCase();
     count.textContent = visible + ' / ∞';
   }
