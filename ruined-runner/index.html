@@ -132,7 +132,7 @@ function makeBgSeg(z) {
 
 function initBg() {
   bgSegs = [];
-  for (let z = 15; z < ZDEPTH; z += 16) bgSegs.push(makeBgSeg(z));
+  for (let z = 15; z < ZDEPTH; z += 28) bgSegs.push(makeBgSeg(z));
 }
 
 function spawnObs() {
@@ -299,51 +299,55 @@ function drawSky() {
 function drawBuildings() {
   const sorted=[...bgSegs].sort((a,b)=>b.z-a.z);
   for(const seg of sorted){
-    const lp=project(-2.0, seg.z), rp=project(2.0, seg.z);
+    const lp=project(-2.6, seg.z), rp=project(2.6, seg.z);
     const s=lp.scale;
     const a=Math.min(0.97, s*2.6);
 
-    // 왼쪽 건물 — 콘크리트 회색, 높고 좁게
-    const lh=seg.lH*s*1.4, lw=seg.lW*s*0.75;
+    // 왼쪽 건물 — 훨씬 크게
+    const lh=seg.lH*s*3.2, lw=seg.lW*s*1.4;
     ctx.fillStyle=`rgba(${88+Math.floor(seg.phase%18)},${95+Math.floor(seg.phase%14)},${82+Math.floor(seg.phase%10)},${a})`;
     ctx.fillRect(lp.x-lw, lp.y-lh, lw, lh);
     // 창문 격자
-    const wRows=Math.max(2,Math.floor(lh/14)), wCols=2;
+    const wRows=Math.max(3, Math.floor(lh/18)), wCols=3;
     for(let wr=0;wr<wRows;wr++) for(let wc=0;wc<wCols;wc++){
-      const wx2=lp.x-lw+lw*(0.2+wc*0.45), wy2=lp.y-lh+lh*(0.05+wr/(wRows+1))*0.95;
-      const ww=lw*0.2, wh=lh*0.06;
-      ctx.fillStyle=`rgba(50,60,50,${0.5*a})`;
-      ctx.fillRect(wx2,wy2,ww,wh);
+      const wx2=lp.x-lw+lw*(0.1+wc*0.3);
+      const wy2=lp.y-lh+lh*(0.03+wr/(wRows+1))*0.96;
+      const ww=lw*0.18, wh=lh*0.04;
+      const lit = Math.sin(frame*0.02+seg.phase+wr*0.5+wc*1.1)>0.6;
+      ctx.fillStyle=lit ? `rgba(180,200,140,${0.25*a})` : `rgba(40,52,38,${0.55*a})`;
+      ctx.fillRect(wx2, wy2, ww, wh);
     }
-    // 덩굴 (녹색) — 건물 왼쪽 아래
+    // 덩굴
     if(seg.win){
-      ctx.fillStyle=`rgba(55,90,45,${0.7*a})`;
-      ctx.fillRect(lp.x-lw, lp.y-lh*0.35, lw*0.3, lh*0.35);
-      ctx.fillStyle=`rgba(70,110,55,${0.5*a})`;
-      ctx.fillRect(lp.x-lw, lp.y-lh*0.6, lw*0.15, lh*0.25);
+      ctx.fillStyle=`rgba(45,80,35,${0.65*a})`;
+      ctx.fillRect(lp.x-lw, lp.y-lh*0.4, lw*0.28, lh*0.4);
+      ctx.fillStyle=`rgba(60,100,48,${0.4*a})`;
+      ctx.fillRect(lp.x-lw, lp.y-lh*0.65, lw*0.12, lh*0.28);
     }
-    // 균열/파손 상단
-    ctx.fillStyle=`rgba(40,48,38,${0.45*a})`;
-    ctx.fillRect(lp.x-lw+lw*0.6, lp.y-lh, lw*0.4, lh*0.08);
+    // 파손 상단
+    ctx.fillStyle=`rgba(38,46,34,${0.5*a})`;
+    ctx.fillRect(lp.x-lw+lw*0.55, lp.y-lh, lw*0.45, lh*0.05);
 
     // 오른쪽 건물
-    const rh=seg.rH*s*1.4, rw=seg.rW*s*0.75;
-    ctx.fillStyle=`rgba(${82+Math.floor(seg.phase%16)},${90+Math.floor(seg.phase%12)},${78+Math.floor(seg.phase%8)},${a})`;
+    const rh=seg.rH*s*3.2, rw=seg.rW*s*1.4;
+    ctx.fillStyle=`rgba(${80+Math.floor(seg.phase%16)},${88+Math.floor(seg.phase%12)},${75+Math.floor(seg.phase%8)},${a})`;
     ctx.fillRect(rp.x, rp.y-rh, rw, rh);
-    const rRows=Math.max(2,Math.floor(rh/14));
-    for(let wr=0;wr<rRows;wr++) for(let wc=0;wc<2;wc++){
-      const wx2=rp.x+rw*(0.15+wc*0.42), wy2=rp.y-rh+rh*(0.05+wr/(rRows+1))*0.95;
-      ctx.fillStyle=`rgba(50,60,50,${0.5*a})`;
-      ctx.fillRect(wx2,wy2,rw*0.2,rh*0.06);
+    const rRows=Math.max(3, Math.floor(rh/18));
+    for(let wr=0;wr<rRows;wr++) for(let wc=0;wc<3;wc++){
+      const wx2=rp.x+rw*(0.08+wc*0.3);
+      const wy2=rp.y-rh+rh*(0.03+wr/(rRows+1))*0.96;
+      const lit = Math.sin(frame*0.02+seg.phase+wr*0.6+wc*0.9+3)>0.55;
+      ctx.fillStyle=lit ? `rgba(180,200,140,${0.22*a})` : `rgba(40,52,38,${0.55*a})`;
+      ctx.fillRect(wx2, wy2, rw*0.18, rh*0.04);
     }
     if(seg.win){
-      ctx.fillStyle=`rgba(55,90,45,${0.65*a})`;
-      ctx.fillRect(rp.x+rw*0.7, rp.y-rh*0.4, rw*0.3, rh*0.4);
-      ctx.fillStyle=`rgba(65,100,50,${0.45*a})`;
-      ctx.fillRect(rp.x+rw*0.85, rp.y-rh*0.65, rw*0.15, rh*0.28);
+      ctx.fillStyle=`rgba(45,80,35,${0.6*a})`;
+      ctx.fillRect(rp.x+rw*0.72, rp.y-rh*0.45, rw*0.28, rh*0.45);
+      ctx.fillStyle=`rgba(58,95,44,${0.38*a})`;
+      ctx.fillRect(rp.x+rw*0.88, rp.y-rh*0.7, rw*0.12, rh*0.28);
     }
-    ctx.fillStyle=`rgba(40,48,38,${0.4*a})`;
-    ctx.fillRect(rp.x, rp.y-rh, rw*0.35, rh*0.07);
+    ctx.fillStyle=`rgba(38,46,34,${0.45*a})`;
+    ctx.fillRect(rp.x, rp.y-rh, rw*0.4, rh*0.05);
   }
 }
 
@@ -481,45 +485,81 @@ function drawPlayer() {
 }
 
 function drawMonster() {
-  const mz = Math.max(0.3, player.z + monsterZ * 0.1);
-  const waveX=Math.sin(frame*0.04)*0.12;
-  const mp=project(waveX, mz);
-  const s=mp.scale;
-  const bob=Math.sin(frame*0.07)*3;
-  ctx.globalAlpha=Math.min(0.97, 0.3+s*1.5);
-  const mx=mp.x, my=mp.y+bob;
+  const prox = 1 + monsterZ / 80; // 0(멀리) ~ 1(잡힘)
 
-  // 눈 — 호박색 (안개 속에서도 식별)
-  ctx.fillStyle=`rgba(220,160,30,${Math.min(1,0.75+s*0.4)})`;
-  ctx.beginPath(); ctx.ellipse(mx-7*s, my-28*s, 5*s, 6*s, -0.3, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(mx+7*s, my-28*s, 5*s, 6*s,  0.3, 0, Math.PI*2); ctx.fill();
-  // 눈 하이라이트
-  ctx.fillStyle='rgba(255,220,100,0.6)';
-  ctx.beginPath(); ctx.ellipse(mx-7*s, my-29*s, 2*s, 2*s, 0, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(mx+7*s, my-29*s, 2*s, 2*s, 0, 0, Math.PI*2); ctx.fill();
-
-  // 몸통 — 매우 짙은 회녹색 (배경과 구분)
-  ctx.fillStyle='rgba(28,35,25,0.97)';
-  ctx.beginPath(); ctx.ellipse(mx, my-17*s, 22*s, 26*s, 0, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle='rgba(18,24,16,0.93)';
-  ctx.beginPath(); ctx.ellipse(mx, my+7*s, 14*s, 20*s, 0, 0, Math.PI*2); ctx.fill();
-
-  // 팔
-  const armSw=Math.sin(frame*0.08)*14;
-  ctx.fillStyle='rgba(22,30,18,0.93)';
-  ctx.beginPath(); ctx.ellipse(mx-26*s, my-7*s+armSw*s, 7*s, 16*s,  0.4, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(mx+26*s, my-7*s-armSw*s, 7*s, 16*s, -0.4, 0, Math.PI*2); ctx.fill();
-
-  // 포자/안개 — 연두빛 (TLOU 클리커 느낌)
-  const prox=1+monsterZ/80;
-  if(prox>0.2){
-    const fog=ctx.createRadialGradient(mx, my, 8*s, mx, my, 110*s);
-    fog.addColorStop(0, `rgba(80,120,50,${prox*0.2})`);
-    fog.addColorStop(1, 'transparent');
-    ctx.fillStyle=fog;
-    ctx.beginPath(); ctx.ellipse(mx, my, 110*s, 85*s, 0, 0, Math.PI*2); ctx.fill();
+  // 포자 안개 — 화면 하단 전체에 깔림
+  if(prox > 0.15) {
+    const fogGrad = ctx.createLinearGradient(0, H-80, 0, H);
+    fogGrad.addColorStop(0, 'transparent');
+    fogGrad.addColorStop(1, `rgba(60,90,40,${prox*0.35})`);
+    ctx.fillStyle = fogGrad;
+    ctx.fillRect(0, H-80, W, 80);
   }
-  ctx.globalAlpha=1;
+
+  // 좀비 떼 — 화면 하단에 걸치게 고정 위치
+  const hordePosY = H + 10;          // 발이 화면 아래로 잘림
+  const hordeCount = 9;
+  const spread = W * 0.85;
+  const baseX = W * 0.075;
+
+  for(let i = 0; i < hordeCount; i++) {
+    // 각 좀비 위치 — 살짝 엇갈리게
+    const t = i / (hordeCount - 1);
+    const zx = baseX + t * spread;
+    const rowOffset = (i % 2 === 0) ? 0 : 12;  // 앞줄/뒷줄
+    const zy = hordePosY - rowOffset;
+
+    // 좀비마다 고유 위상
+    const phase = i * 1.37;
+    const bob = Math.sin(frame * 0.09 + phase) * 3;
+    const lean = Math.sin(frame * 0.06 + phase) * 0.08;
+
+    // 거리에 따른 크기 — 가운데가 약간 크게 (원근감)
+    const distFactor = 1 - Math.abs(t - 0.5) * 0.25;
+    const zs = (0.55 + prox * 0.2) * distFactor;
+
+    // 가까울수록 진하게
+    ctx.globalAlpha = Math.min(0.95, 0.3 + prox * 0.7);
+
+    ctx.save();
+    ctx.translate(zx, zy + bob);
+    ctx.rotate(lean);
+
+    const h = 55 * zs;  // 전체 높이 (발이 잘리므로 위로만)
+
+    // 몸통
+    ctx.fillStyle = `rgba(${22+i*2},${30+i*1},${18+i*1},0.97)`;
+    ctx.fillRect(-10*zs, -h*0.65, 20*zs, h*0.45);
+
+    // 머리
+    ctx.fillStyle = `rgba(${35+i*2},${42+i},${28+i},0.97)`;
+    ctx.fillRect(-7*zs, -h, 14*zs, 12*zs);
+
+    // 팔 (한쪽 앞으로 뻗음)
+    const armAng = Math.sin(frame * 0.09 + phase) * 0.4;
+    ctx.fillStyle = `rgba(20,28,16,0.93)`;
+    ctx.fillRect(-18*zs, -h*0.6 + armAng*8*zs, 8*zs, 16*zs);
+    ctx.fillRect( 10*zs, -h*0.6 - armAng*8*zs, 8*zs, 16*zs);
+
+    // 눈 — 호박색
+    const eyeA = Math.min(1, 0.6 + prox * 0.5);
+    ctx.fillStyle = `rgba(220,160,30,${eyeA})`;
+    ctx.beginPath(); ctx.ellipse(-4*zs, -h+5*zs, 2.5*zs, 3*zs, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse( 4*zs, -h+5*zs, 2.5*zs, 3*zs, 0, 0, Math.PI*2); ctx.fill();
+
+    ctx.restore();
+  }
+
+  // 포자 안개 — 좀비 발 주변
+  if(prox > 0.1) {
+    const baseGrad = ctx.createLinearGradient(0, H-20, 0, H);
+    baseGrad.addColorStop(0, `rgba(50,80,35,${prox*0.45})`);
+    baseGrad.addColorStop(1, `rgba(30,55,20,${prox*0.6})`);
+    ctx.fillStyle = baseGrad;
+    ctx.fillRect(0, H-20, W, 20);
+  }
+
+  ctx.globalAlpha = 1;
 }
 
 function drawParticles() {
@@ -532,20 +572,18 @@ function drawParticles() {
 }
 
 function drawVignette() {
-  // 주변 안개 — 연녹회색
   const vig=ctx.createRadialGradient(W/2,H/2,H*0.2,W/2,H/2,H*0.9);
   vig.addColorStop(0,'transparent');
   vig.addColorStop(1,'rgba(30,40,28,0.45)');
   ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
 
-  // 전체 안개 레이어 — 항상 옅게
-  ctx.fillStyle='rgba(180,200,175,0.06)';
+  ctx.fillStyle='rgba(180,200,175,0.05)';
   ctx.fillRect(0,0,W,H);
 
-  // 괴물 근접 — 포자 안개 짙어짐
+  // 좀비 떼 근접 — 포자 안개 화면 전체로
   const prox=1+monsterZ/80;
   if(prox>0.35){
-    ctx.fillStyle=`rgba(60,90,40,${(prox-0.35)*0.14})`;
+    ctx.fillStyle=`rgba(50,80,35,${(prox-0.35)*0.12})`;
     ctx.fillRect(0,0,W,H);
   }
 }
