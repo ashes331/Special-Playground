@@ -356,10 +356,13 @@ function checkCol() {
   for (const ob of obstacles) {
     if (ob.z > player.z+5 || ob.z < player.z-4) continue;
     if (Math.abs(pl - ob.lane) > 0.46) continue;
-    if (ob.type==='gap') {
-      if (!player.jumping || player.jumpZ > -1.5) { killPlayer(); return; }
+
+    if (ob.type === 'barrier') {
+      // 높은 벽 — 점프로만 통과 가능
+      if (!player.jumping || player.jumpZ > -2) { killPlayer(); return; }
     } else {
-      if (!player.sliding && !player.jumping) { killPlayer(); return; }
+      // 낮은 철조망 — 슬라이드로만 통과 가능
+      if (!player.sliding) { killPlayer(); return; }
     }
   }
   if (monsterZ >= -1) { killPlayer(); return; }
@@ -503,46 +506,85 @@ function drawRoad() {
 function drawObs() {
   const sorted=[...obstacles].sort((a,b)=>b.z-a.z);
   for(const ob of sorted){
-    if(ob.z<0.5)continue;
-    const p=project(LANE_X[ob.lane],ob.z), s=p.scale;
-    if(ob.type==='barrier'){
-      // 무너진 콘크리트 덩어리 — 회색+이끼
-      const bw=30*s, bh=36*s;
-      ctx.fillStyle=`rgba(100,110,95,${0.9+s*0.1})`;
-      ctx.fillRect(p.x-bw/2, p.y-bh, bw, bh);
+    if(ob.z<0.5) continue;
+    const p = project(LANE_X[ob.lane], ob.z);
+    const s = p.scale;
+
+    // 레인 너비 — 좌우 레인 경계 사이 간격으로 계산
+    const laneLeft  = project(LANE_X[ob.lane] - 0.5, ob.z);
+    const laneRight = project(LANE_X[ob.lane] + 0.5, ob.z);
+    const laneW = laneRight.x - laneLeft.x;  // 실제 레인 픽셀 너비
+
+    if(ob.type === 'barrier') {
+      // ── JUMP 장애물: 레인 꽉 채우는 높은 벽 ──
+      // 플레이어 키보다 높아서 슬라이드론 못 통과, 점프만 가능
+      const bw = laneW * 0.92;
+      const bh = laneW * 0.95;  // 높이도 레인 기준으로
+      const bx = p.x - bw / 2;
+      const by = p.y - bh;
+
+      // 콘크리트 본체
+      ctx.fillStyle = `rgba(105,115,98,${0.92+s*0.08})`;
+      ctx.fillRect(bx, by, bw, bh);
+
       // 이끼 얼룩
-      ctx.fillStyle=`rgba(60,90,50,${0.55+s*0.2})`;
-      ctx.fillRect(p.x-bw/2,       p.y-bh*0.9,  bw*0.4, bh*0.25);
-      ctx.fillRect(p.x+bw*0.1,     p.y-bh*0.45, bw*0.35,bh*0.2);
-      // 균열
-      ctx.strokeStyle=`rgba(40,50,38,0.7)`;
-      ctx.lineWidth=s*0.7;
-      ctx.beginPath();
-      ctx.moveTo(p.x-bw*0.1, p.y-bh);
-      ctx.lineTo(p.x+bw*0.05,p.y-bh*0.5);
-      ctx.lineTo(p.x+bw*0.2, p.y);
-      ctx.stroke();
-      // 테두리
-      ctx.strokeStyle=`rgba(60,70,55,0.6)`;
-      ctx.lineWidth=s*0.5;
-      ctx.strokeRect(p.x-bw/2, p.y-bh, bw, bh);
-    } else {
-      // 함몰된 바닥 — 어두운 구멍 + 녹색 테두리 풀
-      const gw=52*s;
-      ctx.fillStyle='rgba(15,20,15,0.97)';
-      ctx.fillRect(p.x-gw/2, p.y-3*s, gw, 9*s);
-      // 풀/이끼 테두리
-      ctx.strokeStyle=`rgba(70,100,55,${0.65+s*0.3})`;
-      ctx.lineWidth=s*1.5;
-      ctx.strokeRect(p.x-gw/2, p.y-3*s, gw, 9*s);
+      ctx.fillStyle = `rgba(55,85,42,${0.5+s*0.25})`;
+      ctx.fillRect(bx,          by,          bw*0.38, bh*0.22);
+      ctx.fillRect(bx+bw*0.55,  by+bh*0.5,   bw*0.4,  bh*0.28);
+
+      // JUMP 아이콘 — 위쪽 화살표
+      ctx.fillStyle = `rgba(230,255,180,${0.85+s*0.15})`;
+      ctx.font = `bold ${Math.max(10, 14*s)}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.fillText('↑', p.x, by + bh*0.52 + 4*s);
+
       // 균열선
-      ctx.strokeStyle=`rgba(50,70,40,${0.5+s*0.3})`;
-      ctx.lineWidth=s*0.6;
+      ctx.strokeStyle = `rgba(40,52,36,0.65)`;
+      ctx.lineWidth = s * 0.8;
       ctx.beginPath();
-      ctx.moveTo(p.x-gw*0.3, p.y-3*s);
-      ctx.lineTo(p.x+gw*0.1, p.y+3*s);
-      ctx.lineTo(p.x+gw*0.35,p.y-3*s);
+      ctx.moveTo(p.x - bw*0.08, by);
+      ctx.lineTo(p.x + bw*0.06, by + bh*0.55);
+      ctx.lineTo(p.x + bw*0.22, by + bh);
       ctx.stroke();
+
+      // 테두리
+      ctx.strokeStyle = `rgba(75,88,62,0.7)`;
+      ctx.lineWidth = s * 0.6;
+      ctx.strokeRect(bx, by, bw, bh);
+
+    } else {
+      // ── SLIDE 장애물: 레인 꽉 채우는 낮은 철조망/가로대 ──
+      // 낮아서 점프 없이 슬라이드로만 통과 가능
+      const bw = laneW * 0.92;
+      const bh = laneW * 0.32;  // 낮게
+      const bx = p.x - bw / 2;
+      const by = p.y - bh;
+
+      // 뒷판 (어두운 배경)
+      ctx.fillStyle = `rgba(20,28,18,0.88)`;
+      ctx.fillRect(bx, by, bw, bh);
+
+      // 가로 철봉 2줄
+      ctx.fillStyle = `rgba(140,160,110,${0.82+s*0.18})`;
+      ctx.fillRect(bx, by + bh*0.15, bw, bh*0.18);
+      ctx.fillRect(bx, by + bh*0.62, bw, bh*0.18);
+
+      // 기둥 (세로)
+      for(let ci=0; ci<=3; ci++){
+        ctx.fillStyle = `rgba(110,130,88,${0.7+s*0.2})`;
+        ctx.fillRect(bx + bw*(ci/3) - s*1.5, by, s*3, bh);
+      }
+
+      // SLIDE 아이콘 — 아래 화살표
+      ctx.fillStyle = `rgba(230,255,180,${0.85+s*0.15})`;
+      ctx.font = `bold ${Math.max(10, 14*s)}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.fillText('↓', p.x, by + bh*0.62 + 4*s);
+
+      // 테두리
+      ctx.strokeStyle = `rgba(90,110,70,0.65)`;
+      ctx.lineWidth = s * 0.7;
+      ctx.strokeRect(bx, by, bw, bh);
     }
   }
 }
