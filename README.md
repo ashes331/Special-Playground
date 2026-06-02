@@ -15,6 +15,7 @@
 | 🎮 **Tetris** | Game | 바닐라 JS 테트리스 |
 | 🎮 **Ruined Runner** | Game | (개발 중) |
 | 🎙️ **Voice Changer** | Tool | 실시간 웹 보이스 체인저 |
+| 🎲 **Probability Tools** | Tool | 확률 도구 모음 |
 
 ---
 
