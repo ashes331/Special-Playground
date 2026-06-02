@@ -16,250 +16,49 @@
       --accent:   #3d3530;
       --tag:      #7c6f64;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Outfit', sans-serif;
-      min-height: 100vh;
-    }
-
-    .wrap {
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 72px 32px 80px;
-    }
-
+    body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; min-height: 100vh; }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 72px 32px 80px; }
     .hero { margin-bottom: 56px; }
-
-    .hero-label {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      color: var(--tag);
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      margin-bottom: 20px;
-    }
-
-    .hero-title {
-      font-size: clamp(36px, 6vw, 60px);
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: -2px;
-      line-height: 1.05;
-      margin-bottom: 18px;
-    }
-
+    .hero-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--tag); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 20px; }
+    .hero-title { font-size: clamp(36px, 6vw, 60px); font-weight: 700; color: var(--text); letter-spacing: -2px; line-height: 1.05; margin-bottom: 18px; }
     .hero-title span { color: var(--tag); font-weight: 300; }
-
-    .hero-desc {
-      font-size: 16px;
-      font-weight: 300;
-      color: var(--sub);
-      line-height: 1.7;
-      max-width: 420px;
-    }
-
-    .section-label {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      color: var(--sub);
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .dashboard {
-      display: grid;
-      grid-template-columns: 220px 1fr;
-      gap: 12px;
-      min-height: 320px;
-    }
-
-    .sidebar {
-      background: var(--accent);
-      border-radius: 16px;
-      padding: 24px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .sidebar-title {
-      font-size: 11px;
-      font-weight: 500;
-      color: rgba(255,255,255,0.3);
-      letter-spacing: 2px;
-      margin-bottom: 10px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background .15s;
-      text-decoration: none;
-    }
-
+    .hero-desc { font-size: 16px; font-weight: 300; color: var(--sub); line-height: 1.7; max-width: 420px; }
+    .section-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--sub); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .dashboard { display: grid; grid-template-columns: 220px 1fr; gap: 12px; min-height: 320px; }
+    .sidebar { background: var(--accent); border-radius: 16px; padding: 24px 18px; display: flex; flex-direction: column; gap: 6px; }
+    .sidebar-title { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.3); letter-spacing: 2px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; cursor: pointer; transition: background .15s; text-decoration: none; }
     .nav-item:hover { background: rgba(255,255,255,0.08); }
     .nav-item.active { background: rgba(255,255,255,0.12); }
-
     .nav-icon { font-size: 16px; width: 20px; text-align: center; }
-
-    .nav-text {
-      font-size: 13px;
-      font-weight: 400;
-      color: rgba(255,255,255,0.75);
-    }
-
+    .nav-text { font-size: 13px; font-weight: 400; color: rgba(255,255,255,0.75); }
     .nav-item.active .nav-text { color: #fff; font-weight: 500; }
-
-    .nav-num {
-      margin-left: auto;
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      color: rgba(255,255,255,0.25);
-    }
-
+    .nav-num { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.25); }
     .sidebar-spacer { flex: 1; }
-
-    .sidebar-footer {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      color: rgba(255,255,255,0.2);
-      letter-spacing: 1px;
-      padding-top: 12px;
-      border-top: 1px solid rgba(255,255,255,0.06);
-    }
-
-    .main-panel {
-      background: var(--surface);
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      padding: 28px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .panel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 4px;
-    }
-
-    .panel-title {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--sub);
-      letter-spacing: 1px;
-    }
-
-    .panel-count {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      color: var(--border);
-    }
-
-    .proj-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px 22px;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      transition: box-shadow .2s, transform .2s, border-color .2s, opacity .2s;
-    }
-
-    .proj-card:hover {
-      box-shadow: 0 4px 20px rgba(0,0,0,0.07);
-      border-color: #ccc8c2;
-      transform: translateY(-2px);
-    }
-
+    .sidebar-footer { font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.2); letter-spacing: 1px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.06); }
+    .main-panel { background: var(--surface); border-radius: 16px; border: 1px solid var(--border); padding: 28px; display: flex; flex-direction: column; gap: 16px; }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .panel-title { font-size: 13px; font-weight: 500; color: var(--sub); letter-spacing: 1px; }
+    .panel-count { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--border); }
+    .proj-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; text-decoration: none; display: flex; align-items: center; gap: 18px; transition: box-shadow .2s, transform .2s, border-color .2s; }
+    .proj-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); border-color: #ccc8c2; transform: translateY(-2px); }
     .proj-card.hidden { display: none; }
-
-    .proj-thumb {
-      width: 48px; height: 48px;
-      background: var(--accent);
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-      flex-shrink: 0;
-    }
-
+    .proj-thumb { width: 48px; height: 48px; background: var(--accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
     .proj-info { flex: 1; }
-
-    .proj-num {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      color: var(--sub);
-      letter-spacing: 2px;
-      margin-bottom: 4px;
-    }
-
-    .proj-name {
-      font-size: 17px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 3px;
-    }
-
-    .proj-desc {
-      font-size: 13px;
-      font-weight: 300;
-      color: var(--sub);
-    }
-
-    .proj-arrow {
-      font-size: 18px;
-      color: var(--border);
-      transition: color .2s, transform .2s;
-    }
-
+    .proj-num { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--sub); letter-spacing: 2px; margin-bottom: 4px; }
+    .proj-name { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+    .proj-desc { font-size: 13px; font-weight: 300; color: var(--sub); }
+    .proj-arrow { font-size: 18px; color: var(--border); transition: color .2s, transform .2s; }
     .proj-card:hover .proj-arrow { color: var(--tag); transform: translateX(3px); }
-
-    .proj-empty {
-      border: 1.5px dashed var(--border);
-      border-radius: 12px;
-      padding: 20px 22px;
-      display: flex;
-      align-items: center;
-      gap: 18px;
-    }
-
+    .proj-empty { border: 1.5px dashed var(--border); border-radius: 12px; padding: 20px 22px; display: flex; align-items: center; gap: 18px; }
     .proj-empty.hidden { display: none; }
-
-    .proj-empty-thumb {
-      width: 48px; height: 48px;
-      background: var(--bg);
-      border-radius: 12px;
-      border: 1px dashed var(--border);
-      flex-shrink: 0;
-    }
-
+    .proj-empty-thumb { width: 48px; height: 48px; background: var(--bg); border-radius: 12px; border: 1px dashed var(--border); flex-shrink: 0; }
     .proj-empty-text { font-size: 13px; color: var(--border); }
-
-    .hero, .section-label, .dashboard {
-      opacity: 0; transform: translateY(14px);
-      animation: up .5s ease forwards;
-    }
+    .hero, .section-label, .dashboard { opacity: 0; transform: translateY(14px); animation: up .5s ease forwards; }
     .hero          { animation-delay: .05s; }
     .section-label { animation-delay: .15s; }
     .dashboard     { animation-delay: .22s; }
-
     @keyframes up { to { opacity:1; transform:translateY(0); } }
   </style>
 </head>
@@ -286,6 +85,11 @@
         <span class="nav-icon">🔧</span>
         <span class="nav-text">Tools</span>
         <span class="nav-num" id="count-tool">2</span>
+      </a>
+      <a class="nav-item" href="#" data-filter="viz">
+        <span class="nav-icon">📊</span>
+        <span class="nav-text">Visualizer</span>
+        <span class="nav-num" id="count-viz">1</span>
       </a>
       <a class="nav-item" href="#" data-filter="etc">
         <span class="nav-icon">✦</span>
@@ -332,13 +136,22 @@
         <div class="proj-arrow">→</div>
       </a>
 
-      <!-- 추가: Probability Tools -->
       <a class="proj-card hidden" href="./probability-tools/" target="_blank" data-category="tool">
         <div class="proj-thumb">🎲</div>
         <div class="proj-info">
           <div class="proj-num">04 · TOOL</div>
           <div class="proj-name">Probability Tools</div>
           <div class="proj-desc">동전 던지기 · 주사위 굴리기 · 숫자 뽑기 · 사다리타기</div>
+        </div>
+        <div class="proj-arrow">→</div>
+      </a>
+
+      <a class="proj-card hidden" href="./pathfinding/" target="_blank" data-category="viz">
+        <div class="proj-thumb">🗺️</div>
+        <div class="proj-info">
+          <div class="proj-num">05 · VISUALIZER</div>
+          <div class="proj-name">Pathfinding Visualizer</div>
+          <div class="proj-desc">A* · Dijkstra · BFS · DFS 실시간 경로탐색 시각화</div>
         </div>
         <div class="proj-arrow">→</div>
       </a>
@@ -354,8 +167,7 @@
 </div>
 
 <script>
-  const LABELS = { game: 'GAMES', tool: 'TOOLS', etc: 'ETC' };
-
+  const LABELS = { game: 'GAMES', tool: 'TOOLS', viz: 'VISUALIZER', etc: 'ETC' };
   const navItems = document.querySelectorAll('.nav-item');
   const cards    = document.querySelectorAll('.proj-card');
   const empty    = document.getElementById('empty-card');
@@ -363,27 +175,20 @@
   const count    = document.getElementById('panel-count');
 
   function filter(category) {
-    navItems.forEach(n => {
-      n.classList.toggle('active', n.dataset.filter === category);
-    });
-
+    navItems.forEach(n => n.classList.toggle('active', n.dataset.filter === category));
     let visible = 0;
     cards.forEach(card => {
       const match = card.dataset.category === category;
       card.classList.toggle('hidden', !match);
       if (match) visible++;
     });
-
     empty.classList.toggle('hidden', visible > 0);
     title.textContent = LABELS[category] || category.toUpperCase();
     count.textContent = visible + ' / ∞';
   }
 
   navItems.forEach(nav => {
-    nav.addEventListener('click', e => {
-      e.preventDefault();
-      filter(nav.dataset.filter);
-    });
+    nav.addEventListener('click', e => { e.preventDefault(); filter(nav.dataset.filter); });
   });
 </script>
 </body>
