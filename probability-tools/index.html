@@ -311,58 +311,40 @@
   }
 
   /* ── LADDER ── */
-  .ladder-wrap { display: flex; flex-direction: column; gap: 1rem; }
-  .ladder-setup { display: flex; flex-direction: column; gap: 0.75rem; }
-  .ladder-hint { font-size: 13px; color: var(--text-muted); }
-  .ladder-input-row { display: flex; gap: 8px; }
-  .ladder-input-row input {
-    flex: 1;
-    padding: 9px 14px;
-    border-radius: var(--radius-sm);
-    border: 1.5px solid var(--purple-mid);
-    background: var(--purple-light);
-    font-family: 'Outfit', sans-serif;
-    font-size: 14px;
-    color: var(--text);
-    outline: none;
-  }
-  .ladder-input-row input:focus { border-color: var(--purple); }
-  .ladder-add-btn {
-    padding: 9px 18px;
+  .ladder-hint { font-size: 13px; color: var(--text-muted); margin-bottom: 0.75rem; }
+  .ladder-count-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ladder-count-btn {
+    width: 44px; height: 44px;
     border-radius: var(--radius-sm);
     border: 1.5px solid var(--purple-mid);
     background: var(--purple-light);
     color: var(--purple);
     font-family: 'Outfit', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
+    font-size: 16px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
   }
-  .ladder-add-btn:hover { background: #e4d8ff; }
-  .name-chips { display: flex; gap: 6px; flex-wrap: wrap; min-height: 32px; }
-  .name-chip {
-    padding: 4px 10px 4px 13px;
-    border-radius: var(--radius-pill);
-    background: #fde8f5;
-    border: 1px solid #f0c0e0;
-    color: #b05090;
-    font-size: 13px;
-    display: flex; align-items: center; gap: 6px;
+  .ladder-count-btn:hover { background: #e4d8ff; }
+  .ladder-name-row { display: flex; gap: 0; justify-content: space-around; padding: 0 4px; }
+  .ladder-name-wrap { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .ladder-name-wrap input {
+    text-align: center;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px; font-weight: 500;
+    border: 1.5px solid var(--purple-mid);
+    border-radius: var(--radius-sm);
+    background: var(--purple-light);
+    color: var(--purple); outline: none;
+    padding: 5px 4px; width: 64px;
   }
-  .name-chip button {
-    background: none; border: none; cursor: pointer;
-    color: #d080b0; font-size: 15px; line-height: 1; padding: 0;
-  }
+  .ladder-name-wrap input:focus { border-color: var(--purple); }
+  .ladder-name-idx { font-size: 11px; color: var(--text-muted); }
   #ladderCanvas { width: 100%; border-radius: var(--radius-sm); display: block; }
   .ladder-results { display: flex; gap: 8px; flex-wrap: wrap; }
   .ladder-result-chip {
     padding: 6px 16px;
     border-radius: var(--radius-pill);
-    font-size: 13px;
-    font-weight: 500;
-    border: 1.5px solid;
+    font-size: 13px; font-weight: 500; border: 1.5px solid;
   }
 
   .center-row {
@@ -531,31 +513,31 @@
 
   <!-- ============================================================
        사다리타기 패널
-       - 참가자 이름 직접 입력 (2~8명), 칩 형태로 표시
-       - 시작 시 결과 라벨 자동 랜덤 생성 (당첨/꽝/등수)
-       - Canvas로 사다리 그리기 + 경로 애니메이션
+       - step1: 인원 수 버튼으로 선택 (2~8명)
+       - step2: 사다리 미리 표시 (가지 숨김) + 이름 입력칸
+       - 시작 버튼 → 가지 공개 + 경로 애니메이션
+       - 결과는 1등부터 순서대로 표시
        ============================================================ -->
   <!-- LADDER -->
   <div class="panel card" id="panel-ladder">
-    <div class="ladder-wrap">
-      <div class="ladder-setup" id="ladderSetup">
-        <p class="ladder-hint">참가자 이름을 입력하세요 (2~8명)</p>
-        <div class="ladder-input-row">
-          <input type="text" id="nameInput" placeholder="이름 입력" maxlength="6"
-            onkeydown="if(event.key==='Enter')addName()">
-          <button class="ladder-add-btn" onclick="addName()">추가</button>
-        </div>
-        <div class="name-chips" id="nameChips"></div>
-        <div class="center-row">
-          <button class="btn" id="startLadderBtn" onclick="startLadder()" disabled>사다리 시작</button>
-        </div>
-      </div>
-      <canvas id="ladderCanvas" style="display:none"></canvas>
+
+    <!-- step 1: 인원 수 선택 -->
+    <div id="ladderStep1">
+      <p class="ladder-hint">몇 명이 참가하나요?</p>
+      <div class="ladder-count-btns" id="ladderCountBtns"></div>
+    </div>
+
+    <!-- step 2: 사다리 + 이름 입력 -->
+    <div id="ladderStep2" style="display:none; flex-direction:column; gap:12px;">
+      <div class="ladder-name-row" id="ladderNameRow"></div>
+      <canvas id="ladderCanvas"></canvas>
       <div class="ladder-results" id="ladderResults"></div>
-      <div class="center-row">
-        <button class="btn" id="resetLadderBtn" onclick="resetLadder()" style="display:none">다시하기</button>
+      <div class="center-row" style="gap:8px;">
+        <button class="btn" id="startLadderBtn" onclick="startLadder()">시작</button>
+        <button class="btn" style="background:var(--color-background-secondary,#f5f5f5);border-color:var(--border);color:var(--text-muted);" onclick="resetLadder()">다시하기</button>
       </div>
     </div>
+
   </div>
 </div>
 
@@ -661,14 +643,18 @@ function pickNumber() {
 
 /* ════════════════════════════
    사다리타기
-   - addName() / removeName() : 참가자 관리
-   - startLadder()            : 사다리 생성 + Canvas 렌더링 + 경로 애니메이션
-   - drawLadder()             : Canvas 프레임 렌더러 (progress 0~1)
-   - rr()                     : Canvas 둥근 사각형 헬퍼
-   - showLadderResults()      : 결과 칩 표시
-   - resetLadder()            : 초기 상태로 복원
+   - initLadderCountBtns() : 인원 수 버튼 생성
+   - selectLadderCount()   : 인원 수 선택 → 사다리 빌드
+   - generateRungs()       : 가지 생성 (열마다 최소 2개 보장)
+   - buildLadder()         : 사다리 구조 계산 + 초기 렌더
+   - buildLadderNameInputs(): 이름 입력칸 생성
+   - drawLadder()          : Canvas 렌더러 (showRungs, progress)
+   - startLadder()         : 가지 공개 + 경로 애니메이션
+   - resetLadder()         : 초기 상태로 복원
    ════════════════════════════ */
-let names = [], ladderData = null;
+let ladderN=0, ladderRungs=[], ladderPaths=[], ladderLabels=[], ladderResultMap={};
+const LADDER_W=580, LADDER_H=320, LADDER_ROWS=6;
+
 const PASTEL = [
   {bg:'#fde8f5',border:'#f0c0e0',text:'#b05090'},
   {bg:'#e8d8ff',border:'#c9b3f0',text:'#7c4dca'},
@@ -679,136 +665,190 @@ const PASTEL = [
   {bg:'#e0f0e0',border:'#b0d8b0',text:'#407040'},
   {bg:'#f8e8d0',border:'#e8c898',text:'#906030'},
 ];
-function addName() {
-  const inp = document.getElementById('nameInput');
-  const n = inp.value.trim();
-  if (!n || names.length>=8) return;
-  names.push(n); inp.value = '';
-  renderNameChips();
-  document.getElementById('startLadderBtn').disabled = names.length < 2;
-}
-function removeName(i) {
-  names.splice(i,1); renderNameChips();
-  document.getElementById('startLadderBtn').disabled = names.length < 2;
-}
-function renderNameChips() {
-  document.getElementById('nameChips').innerHTML = names.map((n,i)=>
-    `<span class="name-chip">${n}<button onclick="removeName(${i})">×</button></span>`
-  ).join('');
-}
+
 function shuffle(a) {
   const b=[...a];
   for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}
   return b;
 }
-function startLadder() {
-  const n = names.length;
-  const labels = shuffle(Array.from({length:n},(_,i)=>i===0?'당첨 🎉':i===1?'꽝 💀':`${i+1}등`));
-  const canvas = document.getElementById('ladderCanvas');
-  const W=580, H=320;
-  canvas.width=W; canvas.height=H;
-  canvas.style.display='block';
-  document.getElementById('ladderSetup').style.display='none';
-  document.getElementById('resetLadderBtn').style.display='inline-block';
 
-  const margin=44, top=56, bottom=H-52;
-  const colW=(W-margin*2)/(n-1);
-  const rows=6, rowH=(bottom-top)/(rows+1);
-  const rungs=Array.from({length:rows},()=>Array(n-1).fill(false));
-  for(let r=0;r<rows;r++){let c=0;while(c<n-1){if(Math.random()>0.45){rungs[r][c]=true;c+=2;}else c++;}}
-
-  const paths = names.map((_,startCol)=>{
-    let col=startCol;
-    const pts=[{x:margin+col*colW,y:top}];
-    for(let r=0;r<rows;r++){
-      const y=top+(r+1)*rowH;
-      if(col>0&&rungs[r][col-1]){pts.push({x:margin+col*colW,y});col--;pts.push({x:margin+col*colW,y});}
-      else if(col<n-1&&rungs[r][col]){pts.push({x:margin+col*colW,y});col++;pts.push({x:margin+col*colW,y});}
-      else pts.push({x:margin+col*colW,y});
-    }
-    pts.push({x:margin+col*colW,y:bottom});
-    return {pts, endCol:col};
-  });
-
-  const resultMap={};
-  paths.forEach((p,i)=>{resultMap[i]=labels[p.endCol];});
-  ladderData={W,H,n,margin,top,bottom,colW,rowH,rows,rungs,paths,labels,resultMap};
-  drawLadder(canvas,ladderData,0);
-
-  let frame=0;
-  const anim=setInterval(()=>{
-    frame++;
-    drawLadder(canvas,ladderData,frame/60);
-    if(frame>=60){clearInterval(anim);showLadderResults(resultMap);}
-  },20);
-}
-function drawLadder(canvas,d,progress) {
-  const ctx=canvas.getContext('2d');
-  const{W,H,n,margin,top,bottom,colW,rowH,rows,rungs,paths,labels}=d;
-  ctx.clearRect(0,0,W,H);
-  for(let c=0;c<n;c++){
-    ctx.beginPath();ctx.moveTo(margin+c*colW,top);ctx.lineTo(margin+c*colW,bottom);
-    ctx.strokeStyle='#d4b3f0';ctx.lineWidth=2.5;ctx.stroke();
-  }
-  for(let r=0;r<rows;r++){
-    for(let c=0;c<n-1;c++){
-      if(rungs[r][c]){
-        const y=top+(r+1)*rowH;
-        ctx.beginPath();ctx.moveTo(margin+c*colW,y);ctx.lineTo(margin+(c+1)*colW,y);
-        ctx.strokeStyle='#c9b3f0';ctx.lineWidth=2;ctx.stroke();
+function generateRungs(n, rows) {
+  const r=Array.from({length:rows},()=>Array(n-1).fill(false));
+  for(let row=0;row<rows;row++){let c=0;while(c<n-1){if(Math.random()>0.4){r[row][c]=true;c+=2;}else c++;}}
+  for(let col=0;col<n-1;col++){
+    const cnt=r.reduce((s,row)=>s+(row[col]?1:0),0);
+    if(cnt<2){
+      const avail=[];
+      for(let row=0;row<rows;row++){
+        if(!r[row][col]&&(col===0||!r[row][col-1])&&(col>=n-2||!r[row][col+1])) avail.push(row);
       }
+      shuffle(avail).slice(0,2-cnt).forEach(row=>{r[row][col]=true;});
     }
   }
-  for(let c=0;c<n;c++){
-    const x=margin+c*colW,p=PASTEL[c%PASTEL.length];
-    ctx.fillStyle=p.bg;rr(ctx,x-24,top-38,48,26,8);ctx.fill();
-    ctx.strokeStyle=p.border;ctx.lineWidth=1.5;rr(ctx,x-24,top-38,48,26,8);ctx.stroke();
-    ctx.fillStyle=p.text;ctx.font='500 12px Outfit,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(names[c]||'',x,top-25);
-  }
-  for(let c=0;c<n;c++){
-    const x=margin+c*colW,p=PASTEL[c%PASTEL.length];
-    ctx.fillStyle=p.bg;rr(ctx,x-28,bottom+10,56,26,8);ctx.fill();
-    ctx.strokeStyle=p.border;ctx.lineWidth=1.5;rr(ctx,x-28,bottom+10,56,26,8);ctx.stroke();
-    ctx.fillStyle=p.text;ctx.font='500 11px Outfit,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(labels[c],x,bottom+23);
-  }
-  if(progress<=0)return;
-  paths.forEach((path,i)=>{
-    const p=PASTEL[i%PASTEL.length],pts=path.pts;
-    let totalLen=0;const segs=[];
-    for(let j=1;j<pts.length;j++){const dx=pts[j].x-pts[j-1].x,dy=pts[j].y-pts[j-1].y;segs.push(Math.sqrt(dx*dx+dy*dy));totalLen+=segs[segs.length-1];}
-    const drawLen=totalLen*progress;let drawn=0;
-    ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
-    for(let j=0;j<segs.length;j++){
-      const rem=drawLen-drawn;if(rem<=0)break;
-      const t=Math.min(rem/segs[j],1);
-      ctx.lineTo(pts[j].x+(pts[j+1].x-pts[j].x)*t,pts[j].y+(pts[j+1].y-pts[j].y)*t);
-      drawn+=segs[j];if(drawn>=drawLen)break;
-    }
-    ctx.strokeStyle=p.border;ctx.lineWidth=3.5;ctx.stroke();
-  });
+  return r;
 }
+
 function rr(ctx,x,y,w,h,r){
   ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
   ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);
   ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
 }
-function showLadderResults(resultMap) {
-  document.getElementById('ladderResults').innerHTML = names.map((n,i)=>{
-    const p=PASTEL[i%PASTEL.length];
-    return `<span class="ladder-result-chip" style="background:${p.bg};border-color:${p.border};color:${p.text}">${n} → ${resultMap[i]}</span>`;
-  }).join('');
+
+(function initLadderCountBtns(){
+  const wrap=document.getElementById('ladderCountBtns');
+  for(let i=2;i<=8;i++){
+    const b=document.createElement('button');
+    b.className='ladder-count-btn';b.textContent=i;
+    b.onclick=()=>selectLadderCount(i);
+    wrap.appendChild(b);
+  }
+})();
+
+function selectLadderCount(num) {
+  ladderN=num;
+  document.getElementById('ladderStep1').style.display='none';
+  document.getElementById('ladderStep2').style.display='flex';
+  buildLadder();
 }
-function resetLadder() {
-  names=[]; ladderData=null;
-  document.getElementById('ladderSetup').style.display='';
-  document.getElementById('ladderCanvas').style.display='none';
+
+function buildLadder() {
+  const n=ladderN;
+  const margin=44, top=56, bottom=LADDER_H-52;
+  const colW=(LADDER_W-margin*2)/(n-1);
+  const rowH=(bottom-top)/(LADDER_ROWS+1);
+
+  ladderLabels=shuffle(Array.from({length:n},(_,i)=>`${i+1}등`));
+  ladderRungs=generateRungs(n,LADDER_ROWS);
+
+  ladderPaths=Array.from({length:n},(_,startCol)=>{
+    let col=startCol;
+    const pts=[{x:margin+col*colW,y:top}];
+    for(let r=0;r<LADDER_ROWS;r++){
+      const y=top+(r+1)*rowH;
+      if(col>0&&ladderRungs[r][col-1]){pts.push({x:margin+col*colW,y});col--;pts.push({x:margin+col*colW,y});}
+      else if(col<n-1&&ladderRungs[r][col]){pts.push({x:margin+col*colW,y});col++;pts.push({x:margin+col*colW,y});}
+      else pts.push({x:margin+col*colW,y});
+    }
+    pts.push({x:margin+col*colW,y:bottom});
+    return{pts,endCol:col};
+  });
+
+  ladderResultMap={};
+  ladderPaths.forEach((p,i)=>{ladderResultMap[i]=ladderLabels[p.endCol];});
+
+  buildLadderNameInputs(margin,colW);
+  const canvas=document.getElementById('ladderCanvas');
+  canvas.width=LADDER_W; canvas.height=LADDER_H;
+  drawLadder(false);
   document.getElementById('ladderResults').innerHTML='';
-  document.getElementById('resetLadderBtn').style.display='none';
-  document.getElementById('nameChips').innerHTML='';
+  document.getElementById('startLadderBtn').disabled=false;
+}
+
+function buildLadderNameInputs(margin,colW) {
+  const row=document.getElementById('ladderNameRow');
+  row.innerHTML='';
+  const cw=document.getElementById('ladderCanvas').offsetWidth||LADDER_W;
+  for(let i=0;i<ladderN;i++){
+    const wrap=document.createElement('div');
+    wrap.className='ladder-name-wrap';
+    wrap.style.width=Math.round(colW*(cw/LADDER_W))+'px';
+    const inp=document.createElement('input');
+    inp.type='text';inp.maxLength=5;inp.placeholder=(i+1)+'번';inp.id='lni'+i;
+    const idx=document.createElement('span');
+    idx.className='ladder-name-idx';idx.textContent=(i+1);
+    wrap.appendChild(inp);wrap.appendChild(idx);
+    row.appendChild(wrap);
+  }
+}
+
+function drawLadder(showRungs, progress=1) {
+  const canvas=document.getElementById('ladderCanvas');
+  const ctx=canvas.getContext('2d');
+  const n=ladderN;
+  const margin=44,top=56,bottom=LADDER_H-52;
+  const colW=(LADDER_W-margin*2)/(n-1);
+  const rowH=(bottom-top)/(LADDER_ROWS+1);
+  ctx.clearRect(0,0,LADDER_W,LADDER_H);
+
+  for(let c=0;c<n;c++){
+    ctx.beginPath();ctx.moveTo(margin+c*colW,top);ctx.lineTo(margin+c*colW,bottom);
+    ctx.strokeStyle='#d4b3f0';ctx.lineWidth=2.5;ctx.stroke();
+  }
+
+  if(showRungs){
+    for(let r=0;r<LADDER_ROWS;r++){
+      for(let c=0;c<n-1;c++){
+        if(ladderRungs[r][c]){
+          const y=top+(r+1)*rowH;
+          ctx.beginPath();ctx.moveTo(margin+c*colW,y);ctx.lineTo(margin+(c+1)*colW,y);
+          ctx.strokeStyle='#c9b3f0';ctx.lineWidth=2;ctx.stroke();
+        }
+      }
+    }
+  }
+
+  for(let c=0;c<n;c++){
+    const x=margin+c*colW,p=PASTEL[c%PASTEL.length];
+    const name=document.getElementById('lni'+c)?.value.trim()||(c+1)+'번';
+    ctx.fillStyle=p.bg;rr(ctx,x-26,top-38,52,26,8);ctx.fill();
+    ctx.strokeStyle=p.border;ctx.lineWidth=1.5;rr(ctx,x-26,top-38,52,26,8);ctx.stroke();
+    ctx.fillStyle=p.text;ctx.font='500 12px Outfit,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(name,x,top-25);
+  }
+
+  for(let c=0;c<n;c++){
+    const x=margin+c*colW,p=PASTEL[c%PASTEL.length];
+    ctx.fillStyle=p.bg;rr(ctx,x-26,bottom+10,52,26,8);ctx.fill();
+    ctx.strokeStyle=p.border;ctx.lineWidth=1.5;rr(ctx,x-26,bottom+10,52,26,8);ctx.stroke();
+    ctx.fillStyle=p.text;ctx.font='500 11px Outfit,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(ladderLabels[c],x,bottom+23);
+  }
+
+  if(showRungs&&progress>0){
+    ladderPaths.forEach((path,i)=>{
+      const p=PASTEL[i%PASTEL.length],pts=path.pts;
+      let totalLen=0;const segs=[];
+      for(let j=1;j<pts.length;j++){const dx=pts[j].x-pts[j-1].x,dy=pts[j].y-pts[j-1].y;segs.push(Math.sqrt(dx*dx+dy*dy));totalLen+=segs[segs.length-1];}
+      const drawLen=totalLen*progress;let drawn=0;
+      ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
+      for(let j=0;j<segs.length;j++){
+        const rem=drawLen-drawn;if(rem<=0)break;
+        const t=Math.min(rem/segs[j],1);
+        ctx.lineTo(pts[j].x+(pts[j+1].x-pts[j].x)*t,pts[j].y+(pts[j+1].y-pts[j].y)*t);
+        drawn+=segs[j];if(drawn>=drawLen)break;
+      }
+      ctx.strokeStyle=p.border;ctx.lineWidth=3.5;ctx.stroke();
+    });
+  }
+}
+
+function startLadder() {
   document.getElementById('startLadderBtn').disabled=true;
-  document.getElementById('nameInput').value='';
+  const nameArr=Array.from({length:ladderN},(_,i)=>{
+    const v=document.getElementById('lni'+i)?.value.trim();
+    return v||(i+1)+'번';
+  });
+  let frame=0;
+  const anim=setInterval(()=>{
+    frame++;
+    drawLadder(true,frame/60);
+    if(frame>=60){
+      clearInterval(anim);
+      const entries=nameArr.map((name,i)=>({name,label:ladderResultMap[i],idx:i}));
+      entries.sort((a,b)=>parseInt(a.label)-parseInt(b.label));
+      document.getElementById('ladderResults').innerHTML=entries.map(({name,label,idx})=>{
+        const p=PASTEL[idx%PASTEL.length];
+        return `<span class="ladder-result-chip" style="background:${p.bg};border-color:${p.border};color:${p.text}">${name} → ${label}</span>`;
+      }).join('');
+    }
+  },18);
+}
+
+function resetLadder() {
+  ladderN=0;ladderRungs=[];ladderPaths=[];ladderLabels=[];ladderResultMap={};
+  document.getElementById('ladderStep2').style.display='none';
+  document.getElementById('ladderStep1').style.display='';
+  document.getElementById('ladderResults').innerHTML='';
 }
 changeDiceCount(0);
 </script>
