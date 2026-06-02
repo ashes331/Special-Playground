@@ -13,7 +13,7 @@
 | 프로젝트 | 분류 | 설명 |
 |:-------:|:----:|:----:|
 | 🎮 **Tetris** | Game | 바닐라 JS 테트리스 |
-| 🎮 **Ruined Runner** | Game | (개발 중) |
+| 🎮 **Ruined Runner** | Game | 탈출을 위해 달리는 게임 (개발 중) |
 | 🎙️ **Voice Changer** | Tool | 실시간 웹 보이스 체인저 |
 | 🎲 **Probability Tools** | Tool | 확률 도구 모음 |
 | 🗺️ **Pathfinding Visualizer** | Visualizer | A* · Dijkstra · BFS · DFS 경로탐색 시각화 |
