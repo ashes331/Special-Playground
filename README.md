@@ -16,6 +16,7 @@
 | 🎮 **Ruined Runner** | Game | (개발 중) |
 | 🎙️ **Voice Changer** | Tool | 실시간 웹 보이스 체인저 |
 | 🎲 **Probability Tools** | Tool | 확률 도구 모음 |
+| 🗺️ **Pathfinding Visualizer** | Visualizer | A* · Dijkstra · BFS · DFS 경로탐색 시각화 |
 
 ---
 
