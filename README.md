@@ -16,6 +16,7 @@
 | 🎮 **Ruined Runner** | Game | (개발 중) |
 | 🎙️ **Voice Changer** | Tool | 실시간 웹 보이스 체인저 |
 | 🎲 **Probability Tools** | Tool | 확률 도구 모음 |
+| 🌐 **Translator** | Tool | MyMemory API 기반 다국어 번역기 |
 | 🗺️ **Pathfinding Visualizer** | Visualizer | A* · Dijkstra · BFS · DFS 경로탐색 시각화 |
 | 🧠 **Neural Network Playground** | Visualizer | 신경망 설계 · 실시간 decision boundary 시각화 |
 
