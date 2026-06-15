@@ -8,15 +8,27 @@
 
 ### 📁 Projects
 
-| 프로젝트 | 분류 | 설명 |
-| --- | --- | --- |
-| 🎮 **Tetris** | Game | 바닐라 JS 테트리스 |
-| ⚔️ **Hero Runner** | Game | 픽셀 레트로 무한 러너 — 코인 수집 + 장애물 회피 |
-| 🎙️ **Voice Changer** | Tool | 실시간 웹 보이스 체인저 |
-| 🎲 **Probability Tools** | Tool | 확률 도구 모음 |
-| 🌐 **Translator** | Tool | MyMemory API 기반 다국어 번역기 |
-| 🗺️ **Pathfinding Visualizer** | Visualizer | A\* · Dijkstra · BFS · DFS 경로탐색 시각화 |
-| 🧠 **Neural Network Playground** | Visualizer | 신경망 설계 · 실시간 decision boundary 시각화 |
+#### 🎮 Games
+
+| 프로젝트 | 설명 | 기술 태그 | 상태 |
+|---------|------|-----------|------|
+| **Tetris** | 바닐라 JS 테트리스 | `Canvas` `Game Logic` | ✅ 완성 |
+| **Hero Runner** | 픽셀 레트로 무한 러너 — 코인 수집 + 장애물 회피 | `Canvas` `Pixel Art` `Procedural` | ✅ 완성 |
+
+#### 🔧 Tools
+
+| 프로젝트 | 설명 | 기술 태그 | 상태 |
+|---------|------|-----------|------|
+| **Voice Changer** | 실시간 웹 보이스 체인저 | `Web Audio API` `DSP` | ✅ 완성 |
+| **Probability Tools** | 확률 도구 모음 — 동전·주사위·사다리 | `Math` `Animation` | ✅ 완성 |
+| **Translator** | MyMemory API 기반 다국어 번역기 | `REST API` `i18n` | ✅ 완성 |
+
+#### 📊 Visualizers
+
+| 프로젝트 | 설명 | 기술 태그 | 상태 |
+|---------|------|-----------|------|
+| **Pathfinding Visualizer** | A\* · Dijkstra · BFS · DFS 경로탐색 시각화 | `Graph` `Algorithm` `Canvas` | ✅ 완성 |
+| **Neural Network Playground** | 신경망 설계 · 실시간 decision boundary 시각화 | `ML` `Backprop` `Canvas` | ✅ 완성 |
 
 ---
 
