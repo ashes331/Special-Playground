@@ -20,17 +20,21 @@ canvas {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
-#overlay {
+
+/* ── 공통 오버레이 ── */
+#overlay, #pauseOverlay {
   position: absolute; top:0; left:0; right:0; bottom:0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  pointer-events: all; cursor: pointer;
+  pointer-events: all;
 }
-#overlaybg {
+.overlaybg {
   position: absolute; top:0; left:0; right:0; bottom:0;
   background: rgba(10,5,20,0.88);
 }
-.ov { position: relative; z-index:2; text-align: center; }
+
+/* ── 타이틀/게임오버 오버레이 ── */
+.ov { position: relative; z-index:2; text-align: center; cursor: pointer; }
 .ov h1 {
   font-size: 48px; letter-spacing: 8px;
   color: #ffe566; text-transform: uppercase;
@@ -39,14 +43,8 @@ canvas {
   animation: blink 1.5s step-end infinite;
 }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.85} }
-.ov .sub {
-  font-size: 12px; letter-spacing: 4px;
-  color: #7be08a; margin-bottom: 32px; text-transform: uppercase;
-}
-.ov .best {
-  font-size: 11px; letter-spacing: 3px;
-  color: #aaa; margin-bottom: 24px;
-}
+.ov .sub { font-size: 12px; letter-spacing: 4px; color: #7be08a; margin-bottom: 32px; text-transform: uppercase; }
+.ov .best { font-size: 11px; letter-spacing: 3px; color: #aaa; margin-bottom: 24px; }
 .ov .best span { color: #ffe566; }
 .ov .start {
   font-size: 13px; letter-spacing: 3px; color: #fff;
@@ -58,10 +56,7 @@ canvas {
   0%,100%{ border-color:#ffe566; color:#ffe566; }
   50%{ border-color:#fff; color:#fff; }
 }
-.ov .keys {
-  display: flex; gap: 10px; margin-top: 20px;
-  justify-content: center; flex-wrap: wrap;
-}
+.ov .keys { display: flex; gap: 10px; margin-top: 20px; justify-content: center; flex-wrap: wrap; }
 .ov .key {
   border: 1px solid rgba(255,229,102,0.3);
   padding: 4px 10px; color: rgba(255,229,102,0.55);
@@ -70,13 +65,66 @@ canvas {
 }
 .ov .died { color: #ff6b6b; font-size: 13px; letter-spacing: 3px; margin-bottom: 8px; display:none; }
 .ov .scoreshow { color: #ffe566; font-size: 12px; letter-spacing: 3px; margin-bottom: 20px; display:none; }
+
+/* ── 일시정지 오버레이 ── */
+#pauseOverlay { display: none; }
+.pause-box {
+  position: relative; z-index: 2;
+  text-align: center;
+}
+.pause-box h2 {
+  font-size: 32px; letter-spacing: 10px;
+  color: #ffe566; text-transform: uppercase;
+  text-shadow: 3px 3px 0 #c8a000;
+  margin-bottom: 6px;
+}
+.pause-box .pause-score {
+  font-size: 11px; letter-spacing: 3px;
+  color: #aaa; margin-bottom: 28px;
+}
+.pause-box .pause-score span { color: #ffe566; }
+.pause-btns { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.pbtn {
+  font-family: 'Courier New', monospace;
+  font-size: 12px; letter-spacing: 3px;
+  text-transform: uppercase; cursor: pointer;
+  padding: 8px 32px; border: 1px solid;
+  background: transparent; width: 220px;
+  transition: background 0.1s, color 0.1s;
+}
+.pbtn-resume  { color: #7be08a; border-color: #7be08a; }
+.pbtn-resume:hover  { background: #7be08a; color: #000; }
+.pbtn-restart { color: #ffe566; border-color: #ffe566; }
+.pbtn-restart:hover { background: #ffe566; color: #000; }
+.pbtn-guide   { color: #88aaff; border-color: #88aaff; }
+.pbtn-guide:hover   { background: #88aaff; color: #000; }
+.pbtn-quit    { color: #ff6b6b; border-color: #ff6b6b; }
+.pbtn-quit:hover    { background: #ff6b6b; color: #000; }
+
+/* 키 가이드 패널 */
+.guide-panel {
+  display: none; margin-top: 18px;
+  border: 1px solid rgba(136,170,255,0.3);
+  padding: 12px 20px; text-align: left;
+}
+.guide-panel.open { display: block; }
+.guide-row {
+  display: flex; justify-content: space-between;
+  gap: 24px; margin-bottom: 6px;
+  font-size: 10px; letter-spacing: 1px;
+}
+.guide-row:last-child { margin-bottom: 0; }
+.guide-key { color: #88aaff; }
+.guide-desc { color: rgba(255,255,255,0.55); }
 </style>
 </head>
 <body>
 <div id="wrap">
   <canvas id="c" width="800" height="400"></canvas>
+
+  <!-- 타이틀 / 게임오버 오버레이 -->
   <div id="overlay" onclick="startGame()">
-    <div id="overlaybg"></div>
+    <div class="overlaybg"></div>
     <div class="ov">
       <h1 id="ovTitle">Hero Run</h1>
       <div class="sub" id="ovSub">pixel adventure</div>
@@ -86,8 +134,32 @@ canvas {
       <div class="start" id="ovStart">press space to start</div>
       <div class="keys">
         <div class="key">↑ / W / Space — jump</div>
-        <div class="key">↓ / S — slide</div>
+        <div class="key">↓ / S — slide (hold)</div>
         <div class="key">double jump ok</div>
+        <div class="key">ESC — pause</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 일시정지 오버레이 -->
+  <div id="pauseOverlay">
+    <div class="overlaybg"></div>
+    <div class="pause-box">
+      <h2>paused</h2>
+      <div class="pause-score">score: <span id="pauseScore">0</span> m &nbsp;·&nbsp; coins: <span id="pauseCoins">0</span></div>
+      <div class="pause-btns">
+        <button class="pbtn pbtn-resume"  onclick="resumeGame()">▶  resume</button>
+        <button class="pbtn pbtn-restart" onclick="restartGame()">↺  restart</button>
+        <button class="pbtn pbtn-guide"   onclick="toggleGuide()">?  key guide</button>
+        <button class="pbtn pbtn-quit"    onclick="quitGame()">✕  quit to title</button>
+      </div>
+      <div class="guide-panel" id="guidePanel">
+        <div class="guide-row"><span class="guide-key">↑ / W / Space</span><span class="guide-desc">jump (press again to double jump)</span></div>
+        <div class="guide-row"><span class="guide-key">↓ / S (hold)</span><span class="guide-desc">slide under birds</span></div>
+        <div class="guide-row"><span class="guide-key">ESC</span><span class="guide-desc">pause / resume</span></div>
+        <div class="guide-row"><span class="guide-key">🪨 rock</span><span class="guide-desc">single jump to clear</span></div>
+        <div class="guide-row"><span class="guide-key">🌵 cactus</span><span class="guide-desc">double jump required</span></div>
+        <div class="guide-row"><span class="guide-key">🐦 bird</span><span class="guide-desc">slide only — jump won't work</span></div>
       </div>
     </div>
   </div>
@@ -117,7 +189,7 @@ const PAL = {
 };
 
 // ── 상태 ──
-let state = 'idle';
+let state = 'idle'; // idle | playing | dead | paused
 let score = 0, coins = 0, frame = 0, speed = 3.2;
 let best = parseInt(localStorage.getItem('herorun_best') || '0');
 let groundX = 0, cloudX = 0, bgX = 0;
@@ -179,6 +251,11 @@ function gameOver() {
 
 // ── 입력 ──
 window.addEventListener('keydown', e => {
+  if (e.code === 'Escape') {
+    if (state === 'playing') pauseGame();
+    else if (state === 'paused') resumeGame();
+    return;
+  }
   if (state !== 'playing') {
     if (['Space','ArrowUp','KeyW','Enter'].includes(e.code)) startGame();
     return;
@@ -191,6 +268,40 @@ window.addEventListener('keyup', e => {
     P.sliding = false; P.slideTimer = 0;
   }
 });
+
+function pauseGame() {
+  state = 'paused';
+  document.getElementById('pauseScore').textContent = Math.floor(score);
+  document.getElementById('pauseCoins').textContent = coins;
+  document.getElementById('pauseOverlay').style.display = 'flex';
+}
+function resumeGame() {
+  state = 'playing';
+  document.getElementById('pauseOverlay').style.display = 'none';
+  document.getElementById('guidePanel').classList.remove('open');
+}
+function restartGame() {
+  document.getElementById('pauseOverlay').style.display = 'none';
+  document.getElementById('guidePanel').classList.remove('open');
+  resetGame();
+  state = 'playing';
+}
+function quitGame() {
+  document.getElementById('pauseOverlay').style.display = 'none';
+  document.getElementById('guidePanel').classList.remove('open');
+  // 타이틀로
+  document.getElementById('ovTitle').textContent = 'Hero Run';
+  document.getElementById('ovSub').textContent = 'pixel adventure';
+  document.getElementById('ovDied').style.display = 'none';
+  document.getElementById('ovScore').style.display = 'none';
+  document.getElementById('ovStart').textContent = 'press space to start';
+  document.getElementById('bestVal').textContent = best;
+  document.getElementById('overlay').style.display = 'flex';
+  state = 'idle';
+}
+function toggleGuide() {
+  document.getElementById('guidePanel').classList.toggle('open');
+}
 
 let ts = {x:0, y:0};
 document.getElementById('c').addEventListener('touchstart', e => {
@@ -620,8 +731,7 @@ function loop() {
   drawGround();
 
   if (state === 'playing' || state === 'dead') {
-    if (state === 'playing') update();
-    else {
+    if (state === 'playing') update();    else {
       // 죽은 후 파티클만 계속
       for (let i = particles.length-1; i >= 0; i--) {
         const p = particles[i];
