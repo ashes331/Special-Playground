@@ -470,74 +470,78 @@ function drawCoins() {
 
 function drawPlayer() {
   if (P.dead && frame % 4 < 2) return;
-  const px2 = Math.floor(P.x);
-  const py2 = Math.floor(P.y);
+  const bx = Math.floor(P.x);
+  const by = Math.floor(P.y);
   const run = Math.floor(P.runT / 3) % 4;
 
   ctx.globalAlpha = P.invincible > 0 && frame%4<2 ? 0.4 : 1;
 
+  // ── 슬라이드 ──
   if (P.sliding) {
-    // 슬라이드 자세 (납작)
-    px(px2, py2-TILE*1.5, TILE*3, TILE, PAL.heroHair);
-    px(px2, py2-TILE*0.5, TILE*3, TILE*0.5, PAL.heroShirt);
-    px(px2+TILE*2.5, py2-TILE*1.5, TILE*0.5, TILE*0.5, PAL.heroSkin);
+    px(bx,           by-TILE*1.5, TILE*3,   TILE,    PAL.heroHair);
+    px(bx,           by-TILE*0.5, TILE*3,   TILE*0.5,PAL.heroShirt);
+    px(bx+TILE*2.5,  by-TILE*1.5, TILE*0.5, TILE*0.5,PAL.heroSkin);
+    ctx.globalAlpha = 1;
     return;
   }
 
-  // 머리
-  px(px2+TILE*0.5, py2-TILE*4, TILE*1.5, TILE, PAL.heroHair);
-  px(px2+TILE*0.5, py2-TILE*3, TILE*1.5, TILE*1.5, PAL.heroSkin);
-  // 눈
-  px(px2+TILE*0.75, py2-TILE*2.75, TILE*0.25, TILE*0.25, '#333');
-  px(px2+TILE*1.5,  py2-TILE*2.75, TILE*0.25, TILE*0.25, '#333');
-  // 몸 (셔츠)
-  px(px2+TILE*0.5, py2-TILE*1.5, TILE*1.5, TILE*1.5, PAL.heroShirt);
-  // 망토 (포인트)
-  px(px2, py2-TILE*1.5, TILE*0.5, TILE*1.5, '#cc2244');
-  // 팔
-  const armR = run<2 ? -TILE*0.5 : 0;
-  px(px2, py2-TILE*1.5+armR, TILE*0.5, TILE, PAL.heroSkin);
-  px(px2+TILE*2, py2-TILE*1.5-armR, TILE*0.5, TILE, PAL.heroSkin);
-  // 검 (오른손)
-  px(px2+TILE*2.5, py2-TILE*2.5-armR, TILE*0.25, TILE*1.5, PAL.heroSword);
-  px(px2+TILE*2, py2-TILE*2-armR, TILE, TILE*0.25, PAL.heroShield);
-  // 바지/다리
-  px(px2+TILE*0.5, py2, py2, TILE*0, 0); // reset
-  if (run === 0 || run === 2) {
-    px(px2+TILE*0.5, py2-TILE, TILE*0.5, TILE, PAL.heroPants);
-    px(px2+TILE,     py2-TILE, TILE*0.5, TILE, PAL.heroPants);
-    px(px2+TILE*0.5, py2,      TILE*0.5, TILE*0.5, PAL.heroBoots);
-    px(px2+TILE,     py2,      TILE*0.5, TILE*0.5, PAL.heroBoots);
-  } else if (run === 1) {
-    px(px2+TILE*0.5, py2-TILE, TILE*0.5, TILE*1.5, PAL.heroPants);
-    px(px2+TILE,     py2-TILE*0.5, TILE*0.5, TILE, PAL.heroPants);
-    px(px2+TILE*0.5, py2+TILE*0.5, TILE*0.5, TILE*0.5, PAL.heroBoots);
-    px(px2+TILE,     py2,           TILE*0.5, TILE*0.5, PAL.heroBoots);
-  } else {
-    px(px2+TILE*0.5, py2-TILE*0.5, TILE*0.5, TILE, PAL.heroPants);
-    px(px2+TILE,     py2-TILE,     TILE*0.5, TILE*1.5, PAL.heroPants);
-    px(px2+TILE*0.5, py2,           TILE*0.5, TILE*0.5, PAL.heroBoots);
-    px(px2+TILE,     py2+TILE*0.5,  TILE*0.5, TILE*0.5, PAL.heroBoots);
+  // ── 점프 포즈 ──
+  if (P.jumping) {
+    // 머리
+    px(bx+TILE*0.5,  by-TILE*4,    TILE*1.5, TILE,    PAL.heroHair);
+    px(bx+TILE*0.5,  by-TILE*3,    TILE*1.5, TILE*1.5,PAL.heroSkin);
+    px(bx+TILE*0.75, by-TILE*2.75, TILE*0.25,TILE*0.25,'#333');
+    px(bx+TILE*1.5,  by-TILE*2.75, TILE*0.25,TILE*0.25,'#333');
+    // 몸
+    px(bx+TILE*0.5,  by-TILE*1.5,  TILE*1.5, TILE*1.5,PAL.heroShirt);
+    px(bx,           by-TILE*1.5,  TILE*0.5, TILE*1.5,'#cc2244');
+    // 팔 (양쪽으로 벌림)
+    px(bx-TILE*0.5,  by-TILE*2,    TILE*0.5, TILE,    PAL.heroSkin);
+    px(bx+TILE*2,    by-TILE*2,    TILE*0.5, TILE,    PAL.heroSkin);
+    // 검
+    px(bx+TILE*2.5,  by-TILE*2.5,  TILE*0.25,TILE*1.5,PAL.heroSword);
+    px(bx+TILE*2,    by-TILE*2,    TILE,     TILE*0.25,PAL.heroShield);
+    // 다리 (앞으로 뻗음)
+    px(bx+TILE*0.25, by-TILE*0.5,  TILE*0.75,TILE*0.5,PAL.heroPants);
+    px(bx+TILE,      by-TILE*0.5,  TILE*0.75,TILE*0.5,PAL.heroPants);
+    px(bx,           by,           TILE*0.5, TILE*0.5,PAL.heroBoots);
+    px(bx+TILE*1.75, by,           TILE*0.5, TILE*0.5,PAL.heroBoots);
+    ctx.globalAlpha = 1;
+    return;
   }
 
-  // 점프 중 포즈
-  if (P.jumping) {
-    ctx.clearRect(px2, Math.floor(P.y)-TILE*4, TILE*3+4, TILE*4);
-    // 다시 그리기 (다리 뻗음)
-    px(px2+TILE*0.5, py2-TILE*4, TILE*1.5, TILE, PAL.heroHair);
-    px(px2+TILE*0.5, py2-TILE*3, TILE*1.5, TILE*1.5, PAL.heroSkin);
-    px(px2+TILE*0.75, py2-TILE*2.75, TILE*0.25, TILE*0.25, '#333');
-    px(px2+TILE*1.5,  py2-TILE*2.75, TILE*0.25, TILE*0.25, '#333');
-    px(px2+TILE*0.5, py2-TILE*1.5, TILE*1.5, TILE*1.5, PAL.heroShirt);
-    px(px2, py2-TILE*1.5, TILE*0.5, TILE*1.5, '#cc2244');
-    px(px2-TILE*0.5, py2-TILE*2, TILE*0.5, TILE, PAL.heroSkin);
-    px(px2+TILE*2,   py2-TILE*2, TILE*0.5, TILE, PAL.heroSkin);
-    px(px2+TILE*2.5, py2-TILE*2.5, TILE*0.25, TILE*1.5, PAL.heroSword);
-    // 다리 뻗음
-    px(px2+TILE*0.25, py2-TILE*0.5, TILE*0.75, TILE*0.5, PAL.heroPants);
-    px(px2+TILE, py2-TILE*0.5, TILE*0.75, TILE*0.5, PAL.heroPants);
-    px(px2, py2,           TILE*0.5, TILE*0.5, PAL.heroBoots);
-    px(px2+TILE*1.75, py2, TILE*0.5, TILE*0.5, PAL.heroBoots);
+  // ── 달리기 포즈 ──
+  // 머리
+  px(bx+TILE*0.5,  by-TILE*4,    TILE*1.5, TILE,    PAL.heroHair);
+  px(bx+TILE*0.5,  by-TILE*3,    TILE*1.5, TILE*1.5,PAL.heroSkin);
+  px(bx+TILE*0.75, by-TILE*2.75, TILE*0.25,TILE*0.25,'#333');
+  px(bx+TILE*1.5,  by-TILE*2.75, TILE*0.25,TILE*0.25,'#333');
+  // 몸
+  px(bx+TILE*0.5,  by-TILE*1.5,  TILE*1.5, TILE*1.5,PAL.heroShirt);
+  px(bx,           by-TILE*1.5,  TILE*0.5, TILE*1.5,'#cc2244');
+  // 팔
+  const armR = run < 2 ? -TILE*0.5 : 0;
+  px(bx,           by-TILE*1.5+armR,  TILE*0.5, TILE, PAL.heroSkin);
+  px(bx+TILE*2,    by-TILE*1.5-armR,  TILE*0.5, TILE, PAL.heroSkin);
+  // 검
+  px(bx+TILE*2.5,  by-TILE*2.5-armR, TILE*0.25,TILE*1.5,PAL.heroSword);
+  px(bx+TILE*2,    by-TILE*2-armR,   TILE,     TILE*0.25,PAL.heroShield);
+  // 다리
+  if (run === 0 || run === 2) {
+    px(bx+TILE*0.5, by-TILE,     TILE*0.5, TILE,    PAL.heroPants);
+    px(bx+TILE,     by-TILE,     TILE*0.5, TILE,    PAL.heroPants);
+    px(bx+TILE*0.5, by,          TILE*0.5, TILE*0.5,PAL.heroBoots);
+    px(bx+TILE,     by,          TILE*0.5, TILE*0.5,PAL.heroBoots);
+  } else if (run === 1) {
+    px(bx+TILE*0.5, by-TILE,     TILE*0.5, TILE*1.5,PAL.heroPants);
+    px(bx+TILE,     by-TILE*0.5, TILE*0.5, TILE,    PAL.heroPants);
+    px(bx+TILE*0.5, by+TILE*0.5, TILE*0.5, TILE*0.5,PAL.heroBoots);
+    px(bx+TILE,     by,          TILE*0.5, TILE*0.5,PAL.heroBoots);
+  } else {
+    px(bx+TILE*0.5, by-TILE*0.5, TILE*0.5, TILE,    PAL.heroPants);
+    px(bx+TILE,     by-TILE,     TILE*0.5, TILE*1.5,PAL.heroPants);
+    px(bx+TILE*0.5, by,          TILE*0.5, TILE*0.5,PAL.heroBoots);
+    px(bx+TILE,     by+TILE*0.5, TILE*0.5, TILE*0.5,PAL.heroBoots);
   }
 
   ctx.globalAlpha = 1;
