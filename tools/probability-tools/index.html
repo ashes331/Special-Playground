@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>확률 도구 모음</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <div class="header-deco">
+    <div class="header-deco-line"></div>
+    <div class="header-deco-diamond"></div>
+    <div class="header-deco-line"></div>
+  </div>
+  <h1>🎲 확률 도구 모음</h1>
+  <p>동전, 주사위, 숫자, 사다리 — 뽑기가 필요할 때</p>
+  <div class="header-bottom-deco">
+    <div class="hbd-dot"></div>
+    <div class="hbd-dot big"></div>
+    <div class="hbd-dot"></div>
+    <div class="hbd-dot big"></div>
+    <div class="hbd-dot"></div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('coin')">🪙 동전 던지기</button>
+    <button class="tab-btn" onclick="switchTab('dice')">🎲 주사위 굴리기</button>
+    <button class="tab-btn" onclick="switchTab('number')">🔢 숫자 뽑기</button>
+    <button class="tab-btn" onclick="switchTab('ladder')">🪜 사다리타기</button>
+  </div>
+
+  <!-- ============================================================
+       동전 던지기 패널
+       - 앞면(👑) / 뒷면(⭐) SVG 동전
+       - 좌측 범례 (앞면/뒷면 미리보기)
+       - 클릭 시 flip 애니메이션 + 카운트 집계
+       ============================================================ -->
+  <div class="panel active card" id="panel-coin">
+    <div class="coin-layout">
+      <div class="coin-legend">
+        <div class="legend-item">
+          <svg width="56" height="56" viewBox="0 0 56 56">
+            <defs>
+              <radialGradient id="gH" cx="38%" cy="32%">
+                <stop offset="0%" stop-color="#fff7c0"/>
+                <stop offset="40%" stop-color="#f5c842"/>
+                <stop offset="100%" stop-color="#b8860b"/>
+              </radialGradient>
+              <radialGradient id="rH" cx="50%" cy="50%">
+                <stop offset="70%" stop-color="transparent"/>
+                <stop offset="100%" stop-color="#8B6914"/>
+              </radialGradient>
+            </defs>
+            <circle cx="28" cy="28" r="26" fill="url(#gH)" stroke="#c8961a" stroke-width="2"/>
+            <circle cx="28" cy="28" r="26" fill="url(#rH)"/>
+            <text x="28" y="35" text-anchor="middle" font-size="22" fill="#7a5200">👑</text>
+          </svg>
+          <span class="legend-label">앞면</span>
+        </div>
+        <div class="legend-item">
+          <svg width="56" height="56" viewBox="0 0 56 56">
+            <defs>
+              <radialGradient id="gT" cx="38%" cy="32%">
+                <stop offset="0%" stop-color="#fff7c0"/>
+                <stop offset="40%" stop-color="#f5c842"/>
+                <stop offset="100%" stop-color="#b8860b"/>
+              </radialGradient>
+              <radialGradient id="rT" cx="50%" cy="50%">
+                <stop offset="70%" stop-color="transparent"/>
+                <stop offset="100%" stop-color="#8B6914"/>
+              </radialGradient>
+            </defs>
+            <circle cx="28" cy="28" r="26" fill="url(#gT)" stroke="#c8961a" stroke-width="2"/>
+            <circle cx="28" cy="28" r="26" fill="url(#rT)"/>
+            <text x="28" y="35" text-anchor="middle" font-size="22" fill="#7a5200">⭐</text>
+          </svg>
+          <span class="legend-label">뒷면</span>
+        </div>
+      </div>
+
+      <div class="coin-main">
+        <svg id="coinSvg" class="coin-svg" width="114" height="114" viewBox="0 0 114 114" onclick="flipCoin()">
+          <defs>
+            <radialGradient id="gM" cx="38%" cy="32%">
+              <stop offset="0%" stop-color="#fff7c0"/>
+              <stop offset="40%" stop-color="#f5c842"/>
+              <stop offset="100%" stop-color="#b8860b"/>
+            </radialGradient>
+            <radialGradient id="rM" cx="50%" cy="50%">
+              <stop offset="70%" stop-color="transparent"/>
+              <stop offset="100%" stop-color="#8B6914"/>
+            </radialGradient>
+          </defs>
+          <circle cx="57" cy="57" r="52" fill="url(#gM)" stroke="#c8961a" stroke-width="3"/>
+          <circle cx="57" cy="57" r="52" fill="url(#rM)"/>
+          <text id="coinSymbol" x="57" y="70" text-anchor="middle" font-size="42" fill="#7a5200">👑</text>
+        </svg>
+        <div class="coin-result" id="coinResult">눌러서 던지기</div>
+        <div class="coin-stats">
+          <div class="coin-stat">
+            <div class="num" id="headCount">0</div>
+            <div class="lbl">앞면 👑</div>
+          </div>
+          <div class="coin-stat">
+            <div class="num" id="totalCount">0</div>
+            <div class="lbl">총 횟수</div>
+          </div>
+          <div class="coin-stat">
+            <div class="num" id="tailCount">0</div>
+            <div class="lbl">뒷면 ⭐</div>
+          </div>
+        </div>
+        <button class="btn btn-sm" onclick="resetCoin()">초기화</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       주사위 굴리기 패널
+       - 다면체 선택 (d4 / d6 / d8 / d10 / d12 / d20)
+       - 주사위 개수 조절 (최대 6개), 합계 표시
+       - 굴리기 시 shake 애니메이션
+       ============================================================ -->
+  <div class="panel card" id="panel-dice">
+    <div class="dice-wrap">
+      <div class="dice-type-row">
+        <button class="dice-type-btn active" onclick="setDiceType(this,4)">d4</button>
+        <button class="dice-type-btn" onclick="setDiceType(this,6)">d6</button>
+        <button class="dice-type-btn" onclick="setDiceType(this,8)">d8</button>
+        <button class="dice-type-btn" onclick="setDiceType(this,10)">d10</button>
+        <button class="dice-type-btn" onclick="setDiceType(this,12)">d12</button>
+        <button class="dice-type-btn" onclick="setDiceType(this,20)">d20</button>
+      </div>
+      <div class="dice-count-row">
+        <button onclick="changeDiceCount(-1)">−</button>
+        <span class="dice-count-val" id="diceCountVal">1</span>
+        <button onclick="changeDiceCount(1)">+</button>
+        <span style="font-size:13px;color:var(--text-muted)">개</span>
+      </div>
+      <div class="dice-display" id="diceDisplay">
+        <div class="die" id="die0">?</div>
+      </div>
+      <div class="dice-total" id="diceTotal"></div>
+      <div class="center-row">
+        <button class="btn" onclick="rollDice()">굴리기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       숫자 뽑기 패널
+       - 최솟값 / 최댓값 범위 지정
+       - 결과 숫자 pop 애니메이션
+       - 최근 뽑기 기록 최대 7개 표시
+       ============================================================ -->
+  <div class="panel card" id="panel-number">
+    <div class="num-wrap">
+      <div class="range-row">
+        <label>최솟값</label>
+        <input type="number" id="numMin" value="1">
+        <span class="range-sep">~</span>
+        <label>최댓값</label>
+        <input type="number" id="numMax" value="100">
+      </div>
+      <div class="num-result" id="numResult">?</div>
+      <div class="num-history" id="numHistory"></div>
+      <button class="btn" onclick="pickNumber()">뽑기</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       사다리타기 패널
+       - step1: 인원 수 버튼으로 선택 (2~8명)
+       - step2: 사다리 미리 표시 (가지 숨김) + 이름 입력칸
+       - 시작 버튼 → 가지 공개 + 경로 애니메이션
+       - 결과는 1등부터 순서대로 표시
+       ============================================================ -->
+  <div class="panel card" id="panel-ladder">
+
+    <!-- step 1: 인원 수 선택 -->
+    <div id="ladderStep1">
+      <p class="ladder-hint">몇 명이 참가하나요?</p>
+      <div class="ladder-count-btns" id="ladderCountBtns"></div>
+    </div>
+
+    <!-- step 2: 사다리 + 이름 입력 -->
+    <div id="ladderStep2" style="display:none; flex-direction:column; gap:12px;">
+      <div class="ladder-name-row" id="ladderNameRow"></div>
+      <canvas id="ladderCanvas"></canvas>
+      <div class="ladder-results" id="ladderResults"></div>
+      <div class="center-row" style="gap:8px;">
+        <button class="btn" id="startLadderBtn" onclick="startLadder()">시작</button>
+        <button class="btn" style="background:linear-gradient(180deg,#f5efe6,#ede0c8);border-color:var(--border);color:var(--text-muted);box-shadow:0 2px 0 #c9b08a;" onclick="resetLadder()">다시하기</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>
