@@ -6,19 +6,151 @@
 <title>Hero Runner</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
+
 body {
-  background: #1a0a2e;
+  background: #0d0a1e;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  height: 100vh; overflow: hidden;
+  min-height: 100vh; overflow: hidden;
   font-family: 'Courier New', monospace;
   image-rendering: pixelated;
 }
-#wrap { position: relative; width: 800px; height: 400px; }
+
+/* ── 픽셀 배경 (별빛 + 산 실루엣) ─────────────────────────── */
+#bg-scene {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── 레이아웃: 캔버스 + 사이드 패널 ──────────────────────── */
+#layout {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+/* ── 사이드 패널 공통 ──────────────────────────────────────── */
+.side-panel {
+  width: 148px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pcard {
+  background: rgba(10, 5, 30, 0.82);
+  border: 1px solid rgba(123, 224, 138, 0.25);
+  box-shadow:
+    inset 0 0 12px rgba(123,224,138,0.04),
+    0 0 18px rgba(0,0,0,0.5);
+  padding: 10px 12px;
+}
+
+.pcard-label {
+  font-size: 7px;
+  letter-spacing: 3px;
+  color: rgba(123,224,138,0.5);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.pcard-value {
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: #ffe566;
+  text-shadow: 0 0 10px rgba(255,229,102,0.6);
+}
+
+.pcard-value.coins-val {
+  color: #7be08a;
+  text-shadow: 0 0 10px rgba(123,224,138,0.5);
+  font-size: 18px;
+}
+
+.pcard-value.best-val {
+  font-size: 16px;
+  color: #88aaff;
+  text-shadow: 0 0 8px rgba(136,170,255,0.5);
+}
+
+/* ── 조작법 카드 ──────────────────────────────────────────── */
+.ctrl-card {
+  background: rgba(10, 5, 30, 0.82);
+  border: 1px solid rgba(136,170,255,0.2);
+  padding: 10px 12px;
+}
+
+.ctrl-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 7px;
+  gap: 6px;
+}
+.ctrl-row:last-child { margin-bottom: 0; }
+
+.ctrl-key {
+  font-size: 8px;
+  color: #88aaff;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  background: rgba(136,170,255,0.1);
+  border: 1px solid rgba(136,170,255,0.3);
+  padding: 2px 5px;
+}
+
+.ctrl-desc {
+  font-size: 7px;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.5px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ── 장애물 가이드 카드 ───────────────────────────────────── */
+.obs-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 7px;
+}
+.obs-row:last-child { margin-bottom: 0; }
+.obs-icon { font-size: 13px; }
+.obs-info { display: flex; flex-direction: column; gap: 2px; }
+.obs-name { font-size: 7px; color: #ffe566; letter-spacing: 1px; }
+.obs-how  { font-size: 6px; color: rgba(255,255,255,0.38); letter-spacing: 0.5px; }
+
+/* ── 캔버스 프레임 ────────────────────────────────────────── */
+#wrap {
+  position: relative;
+  width: 800px; height: 400px;
+  border: 2px solid rgba(123,224,138,0.3);
+  box-shadow:
+    0 0 0 1px #0d0a1e,
+    0 0 28px rgba(123,224,138,0.12),
+    0 0 60px rgba(0,0,0,0.6),
+    inset 0 0 20px rgba(0,0,0,0.4);
+}
+
 canvas {
   display: block; width: 800px; height: 400px;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+}
+
+/* ── 타이틀 텍스트 (캔버스 위) ───────────────────────────── */
+#game-title {
+  position: relative;
+  z-index: 1;
+  font-size: 9px;
+  letter-spacing: 6px;
+  color: rgba(123,224,138,0.35);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  text-align: center;
 }
 
 /* ── 공통 오버레이 ── */
@@ -119,7 +251,30 @@ canvas {
 </style>
 </head>
 <body>
-<div id="wrap">
+<canvas id="bg-scene"></canvas>
+
+<div id="layout">
+
+  <!-- 왼쪽 패널: 점수 / 코인 / 최고기록 -->
+  <div class="side-panel">
+    <div class="pcard">
+      <div class="pcard-label">Score</div>
+      <div class="pcard-value" id="ui-score">0 m</div>
+    </div>
+    <div class="pcard">
+      <div class="pcard-label">Coins</div>
+      <div class="pcard-value coins-val" id="ui-coins">0</div>
+    </div>
+    <div class="pcard">
+      <div class="pcard-label">Best</div>
+      <div class="pcard-value best-val" id="ui-best">0 m</div>
+    </div>
+  </div>
+
+  <!-- 가운데: 타이틀 + 캔버스 -->
+  <div>
+    <div id="game-title">Hero Runner</div>
+    <div id="wrap">
   <canvas id="c" width="800" height="400"></canvas>
 
   <!-- 타이틀 / 게임오버 오버레이 -->
@@ -163,7 +318,207 @@ canvas {
       </div>
     </div>
   </div>
-</div>
+  </div><!-- /#wrap -->
+  </div><!-- /center -->
+
+  <!-- 오른쪽 패널: 조작법 + 장애물 -->
+  <div class="side-panel">
+    <div class="ctrl-card">
+      <div class="pcard-label">Controls</div>
+      <div class="ctrl-row">
+        <span class="ctrl-key">↑ / W</span>
+        <span class="ctrl-desc">jump</span>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-key">Space</span>
+        <span class="ctrl-desc">jump</span>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-key">↓ / S</span>
+        <span class="ctrl-desc">slide</span>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-key">2× jump</span>
+        <span class="ctrl-desc">double jump</span>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-key">ESC</span>
+        <span class="ctrl-desc">pause</span>
+      </div>
+    </div>
+    <div class="ctrl-card">
+      <div class="pcard-label">Obstacles</div>
+      <div class="obs-row">
+        <span class="obs-icon">🪨</span>
+        <div class="obs-info">
+          <span class="obs-name">Rock</span>
+          <span class="obs-how">single jump</span>
+        </div>
+      </div>
+      <div class="obs-row">
+        <span class="obs-icon">🌵</span>
+        <div class="obs-info">
+          <span class="obs-name">Cactus</span>
+          <span class="obs-how">double jump</span>
+        </div>
+      </div>
+      <div class="obs-row">
+        <span class="obs-icon">🐦</span>
+        <div class="obs-info">
+          <span class="obs-name">Bird</span>
+          <span class="obs-how">slide only</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /#layout -->
+
+<script>
+// ── 픽셀 배경: 별빛 + 산 실루엣 ──────────────────────────────
+(function() {
+  const bg = document.getElementById('bg-scene');
+  const bx = bg.getContext('2d');
+  let BW, BH;
+
+  // 별 데이터
+  const STARS = [];
+  function initStars() {
+    STARS.length = 0;
+    const n = Math.floor(BW * BH / 1800);
+    for (let i = 0; i < n; i++) {
+      STARS.push({
+        x: Math.random() * BW,
+        y: Math.random() * BH * 0.72,
+        size: Math.random() < 0.15 ? 2 : 1,
+        bright: Math.random(),
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.4 + Math.random() * 1.2,
+      });
+    }
+  }
+
+  // 산 레이어 생성 (픽셀 계단식)
+  function buildMountain(seed, peaks, baseY, colorFar, colorNear) {
+    const pts = [];
+    const step = Math.floor(BW / peaks);
+    let rng = seed;
+    function rand() { rng = (rng * 1664525 + 1013904223) & 0xffffffff; return (rng >>> 0) / 0xffffffff; }
+    for (let i = 0; i <= peaks; i++) {
+      const x = i * step;
+      const h = baseY * (0.3 + rand() * 0.55);
+      pts.push({ x, y: BH - h });
+    }
+    return { pts, step, colorFar, colorNear, baseY };
+  }
+
+  let mtnFar, mtnNear;
+  function initMountains() {
+    mtnFar  = buildMountain(42,  18, BH * 0.45, '#1a1230', '#221844');
+    mtnNear = buildMountain(137, 11, BH * 0.32, '#0f0a22', '#180e30');
+  }
+
+  function drawMountain(m) {
+    const TILE = 6;
+    bx.fillStyle = m.colorFar;
+    bx.beginPath();
+    bx.moveTo(0, BH);
+    for (let i = 0; i < m.pts.length - 1; i++) {
+      const p0 = m.pts[i], p1 = m.pts[i+1];
+      // 계단식 픽셀 표현
+      const steps = Math.floor((p1.x - p0.x) / TILE);
+      for (let s = 0; s < steps; s++) {
+        const t = s / steps;
+        const nx = p0.x + s * TILE;
+        const ny = Math.floor((p0.y + (p1.y - p0.y) * t) / TILE) * TILE;
+        bx.lineTo(nx, ny);
+      }
+    }
+    bx.lineTo(BW, BH);
+    bx.closePath();
+    bx.fill();
+
+    // 산봉우리 밝은 엣지
+    bx.strokeStyle = m.colorNear;
+    bx.lineWidth = 1;
+    bx.beginPath();
+    let first = true;
+    for (let i = 0; i < m.pts.length - 1; i++) {
+      const p0 = m.pts[i], p1 = m.pts[i+1];
+      const steps = Math.floor((p1.x - p0.x) / TILE);
+      for (let s = 0; s < steps; s++) {
+        const t = s / steps;
+        const nx = p0.x + s * TILE;
+        const ny = Math.floor((p0.y + (p1.y - p0.y) * t) / TILE) * TILE;
+        if (first) { bx.moveTo(nx, ny); first = false; }
+        else bx.lineTo(nx, ny);
+      }
+    }
+    bx.stroke();
+  }
+
+  let t = 0;
+  function draw() {
+    t += 0.016;
+    bx.clearRect(0, 0, BW, BH);
+
+    // 밤하늘 그라데이션
+    const sky = bx.createLinearGradient(0, 0, 0, BH);
+    sky.addColorStop(0,   '#06031a');
+    sky.addColorStop(0.5, '#0d0a1e');
+    sky.addColorStop(1,   '#1a0a2e');
+    bx.fillStyle = sky;
+    bx.fillRect(0, 0, BW, BH);
+
+    // 달
+    const moonX = BW * 0.82, moonY = BH * 0.14;
+    const moonGlow = bx.createRadialGradient(moonX, moonY, 0, moonX, moonY, 60);
+    moonGlow.addColorStop(0, 'rgba(200,220,255,0.08)');
+    moonGlow.addColorStop(1, 'transparent');
+    bx.fillStyle = moonGlow;
+    bx.fillRect(0, 0, BW, BH);
+    // 픽셀 달
+    const moonPx = 4;
+    const moonMask = [
+      [0,1,1,0],
+      [1,1,1,1],
+      [1,1,1,1],
+      [0,1,1,0],
+    ];
+    bx.fillStyle = '#d8e8ff';
+    for (let r = 0; r < moonMask.length; r++)
+      for (let c = 0; c < moonMask[r].length; c++)
+        if (moonMask[r][c])
+          bx.fillRect(moonX + c * moonPx * 2, moonY + r * moonPx * 2, moonPx * 2, moonPx * 2);
+
+    // 별
+    for (const s of STARS) {
+      const flicker = 0.55 + Math.sin(t * s.speed + s.phase) * 0.45;
+      bx.globalAlpha = s.bright * flicker;
+      bx.fillStyle = s.size === 2 ? '#c8e0ff' : '#ffffff';
+      bx.fillRect(Math.floor(s.x), Math.floor(s.y), s.size, s.size);
+    }
+    bx.globalAlpha = 1;
+
+    // 산 (뒤 → 앞 순)
+    drawMountain(mtnFar);
+    drawMountain(mtnNear);
+
+    requestAnimationFrame(draw);
+  }
+
+  function resize() {
+    BW = bg.width  = window.innerWidth;
+    BH = bg.height = window.innerHeight;
+    initStars();
+    initMountains();
+  }
+  window.addEventListener('resize', resize);
+  resize();
+  requestAnimationFrame(draw);
+})();
+</script>
+
 <script>
 const C = document.getElementById('c');
 const ctx = C.getContext('2d');
@@ -377,10 +732,11 @@ function spawnObstacle() {
 
   } else if (r < 0.85) {
     // 새 — 슬라이드로만 통과
-    // 아래 새 + 위에 새 한 마리 추가 → 점프로 절대 못 넘음
+    // 3마리 수직 배치 → 점프로 절대 못 넘음
     const by = GY - TILE * 5;
-    birds.push({x:W+20,    y:by,            wing:0, wingT:0});
-    birds.push({x:W+20,    y:by - TILE*5,   wing:0, wingT:Math.PI}); // 위 새
+    birds.push({x:W+20,    y:by,            wing:0, wingT:0});           // 아래 새
+    birds.push({x:W+20,    y:by - TILE*5,   wing:0, wingT:Math.PI});     // 중간 새
+    birds.push({x:W+20,    y:by - TILE*10,  wing:0, wingT:Math.PI*0.5}); // 위 새
     spawnCoinsAt(W + 20 - 40, GY - TILE * 2, coinCnt);
 
   } else {
@@ -418,7 +774,7 @@ function update() {
 
   // 새 이동
   for (const b of birds) {
-    b.x -= speed * 1.1;
+    b.x -= speed;
     b.wingT += 0.15;
     b.wing = Math.sin(b.wingT) * 6;
   }
@@ -686,21 +1042,30 @@ function drawParticles() {
 }
 
 function drawHUD() {
+  ctx.shadowColor = 'rgba(0,0,0,0.85)';
+  ctx.shadowBlur = 4;
+  ctx.shadowOffsetX = 1;
+  ctx.shadowOffsetY = 1;
+
   // 점수
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = '#ffe566';
   ctx.font = 'bold 13px "Courier New"';
   ctx.textAlign = 'right';
   ctx.fillText(`${Math.floor(score)} m`, W-12, 22);
 
   // 코인 UI
-  // 코인 아이콘
   ctx.fillStyle = PAL.coin;
   ctx.fillRect(12, 10, TILE, TILE);
   ctx.fillStyle = PAL.coinShine;
   ctx.fillRect(14, 11, 4, 4);
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = '#ffe566';
   ctx.textAlign = 'left';
-  ctx.fillText(`× ${coins}`, 24, 22);
+  ctx.fillText(`× ${coins} coins`, 24, 22);
+
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
 
   // 속도 표시 (별 아이콘)
   if (speed > 5) {
@@ -713,6 +1078,11 @@ function drawHUD() {
     ctx.fillStyle = '#ff6b6b';
     ctx.fillText('★★ FASTER', W/2, 16);
   }
+
+  // 사이드 패널 업데이트
+  document.getElementById('ui-score').textContent = Math.floor(score) + ' m';
+  document.getElementById('ui-coins').textContent = coins + ' 개';
+  document.getElementById('ui-best').textContent  = best + ' m';
 }
 
 function drawScanline() {
@@ -751,6 +1121,7 @@ function loop() {
 
 // 최고 기록 초기화
 document.getElementById('bestVal').textContent = best;
+document.getElementById('ui-best').textContent = best + ' m';
 requestAnimationFrame(loop);
 </script>
 </body>
