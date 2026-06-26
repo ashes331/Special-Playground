@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KeyPiano — 키보드로 연주하는 피아노</title>
+  <meta name="description" content="컴퓨터 키보드로 피아노를 연주하세요!" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <header class="header">
+    <div class="logo">
+      <span class="logo-icon">🎹</span>
+      <span class="logo-text">Key<span class="accent">Piano</span></span>
+    </div>
+    <div class="controls">
+      <div class="control-group">
+        <label>음색</label>
+        <div class="tone-buttons">
+          <button class="tone-btn active" data-tone="piano" id="tone-piano">Piano</button>
+          <button class="tone-btn" data-tone="organ" id="tone-organ">Organ</button>
+          <button class="tone-btn" data-tone="synth" id="tone-synth">Synth</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <label>옥타브</label>
+        <div class="octave-control">
+          <button class="octave-btn" id="oct-down">−</button>
+          <span id="octave-display">4</span>
+          <button class="octave-btn" id="oct-up">+</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <label>볼륨</label>
+        <input type="range" id="volume-slider" min="0" max="100" value="70" class="slider" />
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="note-display" id="note-display">
+      <div class="note-name" id="note-name">연주를 시작하세요 🎵</div>
+      <div class="note-hint">Space = 서스테인 &nbsp;|&nbsp; ← → = 옥타브 이동</div>
+    </div>
+
+    <div class="visualizer-container">
+      <canvas id="visualizer"></canvas>
+    </div>
+
+    <div class="piano-wrapper">
+      <div class="piano" id="piano"></div>
+    </div>
+
+    <div class="instructions">
+      <div class="inst-item">
+        <kbd>Space</kbd>
+        <span>서스테인 페달</span>
+      </div>
+      <div class="inst-item">
+        <kbd>←</kbd><kbd>→</kbd>
+        <span>옥타브 이동</span>
+      </div>
+      <div class="inst-item">
+        <kbd>A</kbd><span>~</span><kbd>L</kbd>
+        <span>흰 건반</span>
+      </div>
+      <div class="inst-item">
+        <kbd>W</kbd><kbd>E</kbd><kbd>T</kbd><kbd>Y</kbd><kbd>U</kbd><kbd>O</kbd>
+        <span>검은 건반</span>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
